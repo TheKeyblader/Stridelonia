@@ -1,0 +1,48 @@
+
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.0.0
+MinimumVisualStudioVersion = 16.0.0.0
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Stridelonia.Samples.Windows", "Stridelonia.Samples.Windows\Stridelonia.Samples.Windows.csproj", "{A2C8A58A-8FB8-4496-BD15-56E9E30F15D3}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Stridelonia", "Stridelonia\Stridelonia.csproj", "{176B0BAC-FC95-478C-874A-5CC32E5DE8E0}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Stridelonia.Samples", "Stridelonia.Samples\Stridelonia.Samples.csproj", "{EE85FEE6-A156-44B8-B0E1-830B623B45F8}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{C6790FEC-1084-405F-AE65-C0C5793C66ED}"
+	ProjectSection(SolutionItems) = preProject
+		Directory.build.props = Directory.build.props
+	EndProjectSection
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TodoApp", "..\..\..\Temporaire\Stridelonia\TodoApp\TodoApp.csproj", "{C12731FA-C251-4682-AD20-D62E90D92BD0}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A2C8A58A-8FB8-4496-BD15-56E9E30F15D3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A2C8A58A-8FB8-4496-BD15-56E9E30F15D3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A2C8A58A-8FB8-4496-BD15-56E9E30F15D3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A2C8A58A-8FB8-4496-BD15-56E9E30F15D3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{176B0BAC-FC95-478C-874A-5CC32E5DE8E0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{176B0BAC-FC95-478C-874A-5CC32E5DE8E0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{176B0BAC-FC95-478C-874A-5CC32E5DE8E0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{176B0BAC-FC95-478C-874A-5CC32E5DE8E0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EE85FEE6-A156-44B8-B0E1-830B623B45F8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EE85FEE6-A156-44B8-B0E1-830B623B45F8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EE85FEE6-A156-44B8-B0E1-830B623B45F8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EE85FEE6-A156-44B8-B0E1-830B623B45F8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C12731FA-C251-4682-AD20-D62E90D92BD0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C12731FA-C251-4682-AD20-D62E90D92BD0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C12731FA-C251-4682-AD20-D62E90D92BD0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C12731FA-C251-4682-AD20-D62E90D92BD0}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {4AFAA667-0757-47C5-ADE9-9AE48862A211}
+	EndGlobalSection
+EndGlobal

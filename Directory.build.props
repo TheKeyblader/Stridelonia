@@ -1,0 +1,5 @@
+<Project>
+  <PropertyGroup>
+    <AvaloniaBuildTasksLocation>$(MSBuildThisFileDirectory)\..\tools\netstandard2.0\Avalonia.Build.Tasks.dll</AvaloniaBuildTasksLocation>
+  </PropertyGroup>
+</Project>
