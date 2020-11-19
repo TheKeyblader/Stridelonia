@@ -18,7 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\Temporaire\Stridelonia\TodoApp\TodoApp.csproj" />
     <ProjectReference Include="..\Stridelonia\Stridelonia.csproj" />
+    <ProjectReference Include="..\TodoApp\TodoApp.csproj" />
   </ItemGroup>
 </Project>

@@ -1,7 +1,11 @@
 ﻿using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
+using Avalonia.ReactiveUI;
+using Stridelonia;
 using TodoApp.Views;
+
+[assembly: AvaloniaConfigurator(typeof(TodoApp.Configurator))]
 
 namespace TodoApp
 {
@@ -24,6 +28,19 @@ namespace TodoApp
             }
 
             base.OnFrameworkInitializationCompleted();
+        }
+    }
+
+    public class Configurator
+    {
+        public StridePlatformOptions Initialize()
+        {
+            return new StridePlatformOptions
+            {
+                ApplicationType = typeof(App),
+                ConfigureApp = (builder) => builder.UseReactiveUI().LogToTrace(),
+                DrawFps = true
+            };
         }
     }
 }
