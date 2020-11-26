@@ -1,10 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net461</TargetFramework>
+    <TargetFrameworks>net472;netcoreapp3.1</TargetFrameworks>
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="HarfBuzzSharp" Version="2.6.1.7" />
     <PackageReference Include="SharpDX.Direct2D1" Version="4.2.0" />
     <PackageReference Include="Stride.Engine" Version="4.0.0.1-beta04-1317" />
 
@@ -18,7 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Samples\WindowsGame\WindowsGame.csproj" />
     <ProjectReference Include="..\Stridelonia\Stridelonia.csproj" />
-    <ProjectReference Include="..\TodoApp\TodoApp.csproj" />
   </ItemGroup>
 </Project>

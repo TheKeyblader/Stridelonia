@@ -5,8 +5,11 @@ using Avalonia.Controls;
 using Avalonia.Controls.Platform;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
+using Avalonia.Interactivity;
 using Avalonia.Platform;
 using Avalonia.Rendering;
+using Stride.Engine;
+using Stride.Games;
 using Stridelonia.Implementation;
 
 namespace Avalonia
@@ -19,6 +22,7 @@ namespace Avalonia
 
     public class StridePlatformOptions
     {
+        public bool UseMultiThreading { get; set; }
         public bool UseDeferredRendering { get; set; } = true;
         public bool DrawFps { get; set; }
         public Type ApplicationType { get; set; }
@@ -36,6 +40,13 @@ namespace Stridelonia
 
         public static void Initialize()
         {
+            var options = AvaloniaLocator.Current.GetService<StridePlatformOptions>();
+
+            if (options.UseMultiThreading)
+                AvaloniaLocator.CurrentMutable.Bind<IPlatformThreadingInterface>().ToSingleton<StridePlatformThreadingInterface>();
+            else
+                AvaloniaLocator.CurrentMutable.Bind<IPlatformThreadingInterface>().ToSingleton<SingleThreadStridePlatformThreadingInterface>();
+
             AvaloniaLocator.CurrentMutable
                 .Bind<IStandardCursorFactory>().ToSingleton<CursorFactory>()
                 .Bind<IKeyboardDevice>().ToSingleton<KeyboardDevice>()
@@ -43,14 +54,30 @@ namespace Stridelonia
                 .Bind<IPlatformSettings>().ToSingleton<StridePlatform>()
                 .Bind<IWindowingPlatform>().ToSingleton<StridePlatform>()
                 .Bind<IPlatformIconLoader>().ToSingleton<PlatformIconLoader>()
-                .Bind<IPlatformThreadingInterface>().ToSingleton<StridePlatformThreadingInterface>()
                 .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>()
                 .Bind<IRenderLoop>().ToConstant(new RenderLoop())
                 .Bind<IRenderTimer>().ToConstant(new DefaultRenderTimer(60));
+        }
 
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        static StridePlatform()
+        {
+            Window.WindowOpenedEvent.AddClassHandler(typeof(Window), OnWindowOpened);
+        }
+
+        private static void OnWindowOpened(object sender, RoutedEventArgs e)
+        {
+
+            var window = (Window)sender;
+            if (!WindowExtensions.GetStrideInited(window))
             {
-                //Do Clipboard
+                var game = AvaloniaLocator.Current.GetService<IGame>();
+                var scene = game.Services.GetService<SceneSystem>().SceneInstance.RootScene;
+
+                var entity = new Entity();
+                entity.Add(new AvaloniaComponent { Window = window });
+                scene.Entities.Add(entity);
+
+                WindowExtensions.SetStrideInited(window, true);
             }
         }
 
@@ -59,9 +86,6 @@ namespace Stridelonia
             throw new NotSupportedException();
         }
 
-        public IWindowImpl CreateWindow()
-        {
-            throw new NotSupportedException();
-        }
+        public IWindowImpl CreateWindow() => new WindowImpl();
     }
 }

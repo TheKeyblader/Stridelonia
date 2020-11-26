@@ -1,0 +1,18 @@
+﻿<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="WindowsGame.Views.ButtonWindow"
+        SystemDecorations="None"
+        Topmost="True"
+        Title="ButtonWindow">
+  <Window.Styles>
+    <Style Selector="Button:pointerover">
+      <Setter Property="Background" Value="Blue"/>
+    </Style>
+  </Window.Styles>
+  <Button x:Name="CloseBtn" Click="CloseButton">
+    Click Me !
+  </Button>
+</Window>

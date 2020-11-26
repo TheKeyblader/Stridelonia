@@ -59,34 +59,49 @@ namespace Stridelonia
 
         public void Post(Action action, DispatcherPriority priority = DispatcherPriority.Normal)
         {
-            _taskqueue.Enqueue(new Task(action));
+            if (CheckAccess())
+                action();
+            else
+                _taskqueue.Enqueue(new Task(action));
         }
 
         public Task InvokeAsync(Action action, DispatcherPriority priority = DispatcherPriority.Normal)
         {
             var task = new Task(action);
-            _taskqueue.Enqueue(task);
+            if (CheckAccess())
+                task.RunSynchronously();
+            else
+                _taskqueue.Enqueue(task);
             return task;
         }
 
         public Task<TResult> InvokeAsync<TResult>(Func<TResult> function, DispatcherPriority priority = DispatcherPriority.Normal)
         {
             var task = new Task<TResult>(function);
-            _taskqueue.Enqueue(task);
+            if (CheckAccess())
+                task.RunSynchronously();
+            else
+                _taskqueue.Enqueue(task);
             return task;
         }
 
         public Task InvokeAsync(Func<Task> function, DispatcherPriority priority = DispatcherPriority.Normal)
         {
             var task = new Task<Task>(function);
-            _taskqueue.Enqueue(task);
+            if (CheckAccess())
+                task.RunSynchronously();
+            else
+                _taskqueue.Enqueue(task);
             return task.Unwrap();
         }
 
         public Task<TResult> InvokeAsync<TResult>(Func<Task<TResult>> function, DispatcherPriority priority = DispatcherPriority.Normal)
         {
             var task = new Task<Task<TResult>>(function);
-            _taskqueue.Enqueue(task);
+            if (CheckAccess())
+                task.RunSynchronously();
+            else
+                _taskqueue.Enqueue(task);
             return task.Unwrap();
         }
 

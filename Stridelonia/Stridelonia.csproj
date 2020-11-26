@@ -1,11 +1,11 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net461</TargetFramework>
+    <TargetFrameworks>net461;netcoreapp3.1</TargetFrameworks>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Avalonia" Version="0.10.0-preview6" />
+    <PackageReference Include="Avalonia" Version="0.10.0-preview6" ExcludeAssets="build" />
     <PackageReference Include="Avalonia.Desktop" Version="0.10.0-preview6" />
     <PackageReference Include="Avalonia.Direct2D1" Version="0.10.0-preview6" />
     <PackageReference Include="Stride.Engine" Version="4.0.0.1-beta04-1317" PrivateAssets="contentfiles;analyzers" />

@@ -3,11 +3,12 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Avalonia.ReactiveUI;
 using Stridelonia;
-using TodoApp.Views;
+using WindowsGame.ViewModels;
+using WindowsGame.Views;
 
-[assembly: AvaloniaConfigurator(typeof(TodoApp.Configurator))]
+[assembly: AvaloniaConfigurator(typeof(WindowsGame.Configurator))]
 
-namespace TodoApp
+namespace WindowsGame
 {
     public class App : Application
     {
@@ -20,11 +21,10 @@ namespace TodoApp
         {
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
-                desktop.MainWindow = new MainWindow();
-            }
-            if (ApplicationLifetime is ISingleViewApplicationLifetime single)
-            {
-                single.MainView = new MainView();
+                desktop.MainWindow = new MainWindow
+                {
+                    DataContext = new MainWindowViewModel(),
+                };
             }
 
             base.OnFrameworkInitializationCompleted();
@@ -39,7 +39,8 @@ namespace TodoApp
             {
                 ApplicationType = typeof(App),
                 ConfigureApp = (builder) => builder.UseReactiveUI().LogToTrace(),
-                DrawFps = true,
+                UseMultiThreading = true,
+                DrawFps = true
             };
         }
     }

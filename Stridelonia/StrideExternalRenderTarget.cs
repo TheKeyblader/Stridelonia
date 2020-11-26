@@ -15,47 +15,40 @@ namespace Stridelonia
 {
     public class StrideExternalRenderTarget : IExternalDirect2DRenderTargetSurface
     {
+        private Mutex _mutex;
         private DeviceContext _renderTarget;
         private Bitmap1 _bitmap;
 
-        private IGraphicsDeviceService _service;
-        private SharpDX.Direct3D11.Device _strideDevice;
+        private GraphicsDevice _device;
         private Texture2D renderedTexture;
         private Texture2D visibleTexture;
+        private Texture _visibleStrideTexture;
 
-        public RenderInfo RenderInfo { get; private set; }
         public Size ClientSize { get; set; }
 
-        public static Mutex CriticalMutex { get; } = new Mutex();
+        public Texture Texture => _visibleStrideTexture;
 
-        public StrideExternalRenderTarget(IGraphicsDeviceService service)
+        public StrideExternalRenderTarget(GraphicsDevice device)
         {
-            RenderInfo = new RenderInfo();
-            _service = service;
-            _strideDevice = SharpDXInterop.GetNativeDevice(_service.GraphicsDevice) as SharpDX.Direct3D11.Device;
+            _mutex = new Mutex();
+            _device = device;
         }
 
         public void BeforeDrawing()
         {
-            
-            CriticalMutex.WaitOne();
-            Debug.WriteLine("Started calculting Avalonia texture");
+            _mutex.WaitOne();
         }
 
         public void AfterDrawing()
         {
-            Debug.WriteLine("end calculting Avalonia texture");
-            Debug.WriteLine("start coping Avalonia texture");
             Direct2D1Platform.Direct3D11Device.ImmediateContext.CopyResource(renderedTexture, visibleTexture);
             Direct2D1Platform.Direct3D11Device.ImmediateContext.Flush();
-            Debug.WriteLine("end coping Avalonia texture");
-            Debug.WriteLine("end calculting Avalonia texture");
-            CriticalMutex.ReleaseMutex();
-           
+            _mutex.ReleaseMutex();
         }
 
         public void DestroyRenderTarget()
         {
+            _mutex.WaitOne();
             if (_renderTarget != null)
             {
                 _renderTarget.Dispose();
@@ -63,25 +56,21 @@ namespace Stridelonia
                 _bitmap.Dispose();
                 visibleTexture?.Dispose();
                 renderedTexture?.Dispose();
-                RenderInfo.Texture.Dispose();
-                RenderInfo.Texture = null;
             }
+            _mutex.ReleaseMutex();
         }
 
 
         public SharpDX.Direct2D1.RenderTarget GetOrCreateRenderTarget()
         {
-            if (_renderTarget == null)
-                StrideDispatcher.StrideThread.InvokeAsync(() =>
-                {
-                    _renderTarget = Create();
-                }).Wait();
+            if (_renderTarget == null) _renderTarget = Create();
             return _renderTarget;
         }
 
         private DeviceContext Create()
         {
-            Debug.WriteLine("Creating Avalonia Render Target");
+            if (ClientSize.Height == 0 || ClientSize.Width == 0) throw new InvalidOperationException("Can't create window or texture with size of 0");
+
             renderedTexture = new Texture2D(Direct2D1Platform.Direct3D11Device, new Texture2DDescription
             {
                 ArraySize = 1,
@@ -110,8 +99,9 @@ namespace Stridelonia
             });
 
             var sharedHandle = visibleTexture.QueryInterface<Resource>().SharedHandle;
-            var strideTex = _strideDevice.OpenSharedResource<Texture2D>(sharedHandle);
-            RenderInfo.Texture = SharpDXInterop.CreateTextureFromNative(_service.GraphicsDevice, strideTex, false);
+            var strideDevice = SharpDXInterop.GetNativeDevice(_device) as SharpDX.Direct3D11.Device;
+            var strideTex = strideDevice.OpenSharedResource<Texture2D>(sharedHandle);
+            _visibleStrideTexture = SharpDXInterop.CreateTextureFromNative(_device, strideTex, false);
 
             var surface = renderedTexture.QueryInterface<Surface>();
             _renderTarget = new DeviceContext(Direct2D1Platform.Direct2D1Device, DeviceContextOptions.EnableMultithreadedOptimizations)
@@ -132,8 +122,6 @@ namespace Stridelonia
             });
 
             _renderTarget.Target = _bitmap;
-
-            Debug.WriteLine("Finish Creating Avalonia Render Target");
             return _renderTarget;
         }
     }

@@ -11,7 +11,9 @@ using Stride.Graphics;
 using Stride.Rendering;
 using Stride.Core.Mathematics;
 using Stridelonia.Input;
-using System.Diagnostics;
+using System.Collections.Generic;
+using Avalonia.Threading;
+using Stride.Core.Extensions;
 
 namespace Stridelonia
 {
@@ -34,55 +36,132 @@ namespace Stridelonia
 
     public class AvaloniaUIRenderFeature : RootRenderFeature
     {
-        public override Type SupportedRenderObjectType => typeof(FakeRenderObject);
+        public override Type SupportedRenderObjectType => typeof(RenderAvaloniaWindow);
 
-        private ThreadLocal<ThreadContext> threadContext;
+        public StridePlatformOptions Options { get; }
+
         private Thread _avaloniaThread;
         private EventWaitHandle _init;
-        private CancellationTokenSource _lifetimeTokenSource;
 
-        private StrideTopLevel _topLevel;
-        private ScreenInput input;
+        private SpriteBatch batch;
+        private Sprite3DBatch batch3d;
 
-        private static AvaloniaUIRenderFeature instance;
+        public AvaloniaUIRenderFeature() : base()
+        {
+            Options = AvaloniaLocator.Current.GetService<StridePlatformOptions>() ?? GetOptions();
+            AvaloniaLocator.CurrentMutable.BindToSelf(Options);
+        }
 
         protected override void InitializeCore()
         {
             base.InitializeCore();
 
-            if (instance != null) throw new InvalidOperationException("Can have only one AvaloniaUI Feature");
-            instance = this;
+            AvaloniaLocator.CurrentMutable.BindToSelf(RenderSystem.Services.GetService<IGame>());
 
-            threadContext = new ThreadLocal<ThreadContext>(() => new ThreadContext(Context.GraphicsDevice), true);
+            var dispatcher = RenderSystem.Services.GetService<StrideDispatcher>();
+            if (dispatcher == null)
+            {
+                var gameSytems = RenderSystem.Services.GetSafeServiceAs<IGameSystemCollection>();
+                dispatcher = new StrideDispatcher(RenderSystem.Services);
+                RenderSystem.Services.AddService(dispatcher);
+                gameSytems.Add(dispatcher);
+            }
 
-            var gameSytems = RenderSystem.Services.GetSafeServiceAs<IGameSystemCollection>();
-            var dispatcher = new StrideDispatcher(RenderSystem.Services);
-            RenderSystem.Services.AddService(dispatcher);
-            gameSytems.Add(dispatcher);
+            batch = new SpriteBatch(Context.GraphicsDevice);
+            batch3d = new Sprite3DBatch(Context.GraphicsDevice);
 
-            input = new ScreenInput(RenderSystem.Services);
-            RenderSystem.Services.AddService(input);
-            gameSytems.Add(input);
+            if (Application.Current == null) StartAvalonia();
 
-            var options = GetOptions();
-            AvaloniaLocator.CurrentMutable.BindToSelf(options);
-
-            _lifetimeTokenSource = new CancellationTokenSource();
-            _init = new EventWaitHandle(false, EventResetMode.ManualReset);
-            _avaloniaThread = new Thread(AvaloniaThread);
-            _avaloniaThread.Name = "Avalonia Thread";
-            _avaloniaThread.Start(options);
-            _init.WaitOne();
-            _init.Dispose();
-
+            var picking = RenderSystem.Services.GetService<PickingSystem>();
+            if (picking == null)
+            {
+                var gameSytems = RenderSystem.Services.GetSafeServiceAs<IGameSystemCollection>();
+                picking = new PickingSystem(RenderSystem.Services);
+                RenderSystem.Services.AddService(picking);
+                gameSytems.Add(picking);
+            }
         }
 
         public override void Unload()
         {
             base.Unload();
 
-            _lifetimeTokenSource.Cancel();
-            _topLevel.Dispose();
+            if (Application.Current.ApplicationLifetime is IControlledApplicationLifetime controlledLifetime)
+            {
+                Dispatcher.UIThread.Post(() =>
+                {
+                    controlledLifetime.Shutdown();
+                });
+            }
+        }
+
+        public override void Draw(RenderDrawContext context, RenderView renderView, RenderViewStage renderViewStage, int startIndex, int endIndex)
+        {
+            base.Draw(context, renderView, renderViewStage, startIndex, endIndex);
+
+            var windows = ((IClassicDesktopStyleApplicationLifetime)Application.Current.ApplicationLifetime)
+                .Windows.Select(w => (WindowImpl)w.PlatformImpl);
+            var sortedWindows = windows.Where(w => w.IsVisible)
+                .OrderByDescending(w => w.IsTopmost).ThenByDescending(w => w.ZIndex);
+
+            batch.Begin(context.GraphicsContext, SpriteSortMode.BackToFront, blendState: BlendStates.AlphaBlend, depthStencilState: DepthStencilStates.None, rasterizerState: RasterizerStates.CullNone);
+            batch3d.Begin(context.GraphicsContext, renderView.ViewProjection, SpriteSortMode.BackToFront, BlendStates.AlphaBlend, null, DepthStencilStates.None, RasterizerStates.CullNone);
+            for (var index = startIndex; index < endIndex; index++)
+            {
+                var renderNodeReference = renderViewStage.SortedRenderNodes[index].RenderNode;
+                var renderNode = GetRenderNode(renderNodeReference);
+
+                var renderWindow = (RenderAvaloniaWindow)renderNode.RenderObject;
+
+                var depth = sortedWindows.Reverse().IndexOf(w => w == renderWindow.Window.PlatformImpl);
+
+                if (renderWindow.Is2D)
+                {
+                    batch.Draw(renderWindow.WindowTexture, renderWindow.WorldMatrix.TranslationVector.XY(), Color.White, 0, new Vector2(0, 0),
+                        layerDepth: depth);
+                }
+                else
+                {
+                    var sourceRect = new RectangleF(0, 0, renderWindow.WindowTexture.Width, renderWindow.WindowTexture.Height);
+                    var size = new Vector2(sourceRect.Width, sourceRect.Height) / 100;
+                    var color = Color4.White;
+                    batch3d.Draw(renderWindow.WindowTexture, ref renderWindow.WorldMatrix, ref sourceRect, ref size, ref color, depth: depth);
+                }
+            }
+            batch3d.End();
+            batch.End();
+        }
+
+        private void StartAvalonia()
+        {
+            if (Options.UseMultiThreading)
+            {
+                _init = new EventWaitHandle(false, EventResetMode.ManualReset);
+                _avaloniaThread = new Thread(AvaloniaThread);
+                _avaloniaThread.Name = "Avalonia Thread";
+                _avaloniaThread.Start(Options);
+                _init.WaitOne();
+                _init.Dispose();
+            }
+            else
+            {
+                var builderType = typeof(AppBuilderBase<>).MakeGenericType(typeof(AppBuilder));
+                var configureMethod = builderType.GetMethod(nameof(AppBuilder.Configure), BindingFlags.Public | BindingFlags.Static, null, new Type[0], null);
+                var builder = (AppBuilder)configureMethod.MakeGenericMethod(Options.ApplicationType).Invoke(null, new object[0]);
+
+                builder
+                    .UseStride()
+                    .UseDirect2D1();
+                Options.ConfigureApp(builder);
+
+                var lifetime = new ClassicDesktopStyleApplicationLifetime
+                {
+                    Args = Environment.GetCommandLineArgs(),
+                    ShutdownMode = ShutdownMode.OnExplicitShutdown
+                };
+                builder.SetupWithLifetime(lifetime);
+                lifetime.Start(Environment.GetCommandLineArgs());
+            }
         }
 
         private void AvaloniaThread(object parameter)
@@ -98,36 +177,16 @@ namespace Stridelonia
                 .UseDirect2D1();
             options.ConfigureApp(builder);
 
-            var lifetime = new StrideLifetime();
-            builder.AfterSetup(_ =>
+            var lifetime = new ClassicDesktopStyleApplicationLifetime
             {
-                var service = RenderSystem.Services.GetSafeServiceAs<IGraphicsDeviceService>();
-                _topLevel = new StrideTopLevel(service);
-                lifetime.TopLevel = _topLevel;
-                input.TopLevel = _topLevel;
-
-            });
+                Args = Environment.GetCommandLineArgs(),
+                ShutdownMode = ShutdownMode.OnExplicitShutdown
+            };
             builder.SetupWithLifetime(lifetime);
 
             _init.Set();
 
-            builder.Instance.Run(_lifetimeTokenSource.Token);
-        }
-
-        public override void Draw(RenderDrawContext context, RenderView renderView, RenderViewStage renderViewStage)
-        {
-            base.Draw(context, renderView, renderViewStage);
-
-            if (_topLevel.RenderInfo.Texture == null) return;
-
-            StrideExternalRenderTarget.CriticalMutex.WaitOne();
-            Debug.WriteLine("Start Drawing AvaloniaSprite");
-            var batch = threadContext.Value;
-            batch.SpriteBatch.Begin(context.GraphicsContext, blendState: BlendStates.AlphaBlend, depthStencilState: DepthStencilStates.None, rasterizerState: RasterizerStates.CullNone);
-            batch.SpriteBatch.Draw(_topLevel.RenderInfo.Texture, new Vector2(), Color.White);
-            batch.SpriteBatch.End();
-            Debug.WriteLine("End Drawing AvaloniaSprite");
-            StrideExternalRenderTarget.CriticalMutex.ReleaseMutex();
+            lifetime.Start(Environment.GetCommandLineArgs());
         }
 
         private StridePlatformOptions GetOptions()
@@ -144,26 +203,5 @@ namespace Stridelonia
             var instance = configuratorConstructor.Invoke(Array.Empty<object>());
             return (StridePlatformOptions)configuratorMethod.Invoke(instance, Array.Empty<object>());
         }
-
-        class StrideLifetime : ISingleViewApplicationLifetime
-        {
-            public Control MainView { get => TopLevel.Content; set => TopLevel.Content = value; }
-            public StrideTopLevel TopLevel { get; set; }
-        }
-        class ThreadContext : IDisposable
-        {
-            public SpriteBatch SpriteBatch { get; }
-
-            public ThreadContext(GraphicsDevice device)
-            {
-                SpriteBatch = new SpriteBatch(device);
-            }
-
-            public void Dispose()
-            {
-                SpriteBatch.Dispose();
-            }
-        }
-        class FakeRenderObject : RenderObject { }
     }
 }

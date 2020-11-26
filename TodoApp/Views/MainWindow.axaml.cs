@@ -1,6 +1,7 @@
 ﻿using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
+using Stridelonia;
 
 namespace TodoApp.Views
 {
@@ -8,6 +9,7 @@ namespace TodoApp.Views
     {
         public MainWindow()
         {
+            WindowExtensions.SetRenderGroup(this, Stride.Rendering.RenderGroup.Group31);
             this.InitializeComponent();
         }
 

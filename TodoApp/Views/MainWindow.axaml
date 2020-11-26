@@ -5,6 +5,9 @@
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         xmlns:v="clr-namespace:TodoApp.Views"
         x:Class="TodoApp.Views.MainWindow"
+        Background="Transparent"
+        TransparencyLevelHint="Transparent"
+        Width="800" Height="450"
         Title="MainWindow">
   <v:MainView/>
 </Window>
