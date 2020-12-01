@@ -63,7 +63,9 @@ namespace Stridelonia
 
         public SharpDX.Direct2D1.RenderTarget GetOrCreateRenderTarget()
         {
+            _mutex.WaitOne();
             if (_renderTarget == null) _renderTarget = Create();
+            _mutex.ReleaseMutex();
             return _renderTarget;
         }
 

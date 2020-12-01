@@ -23,14 +23,7 @@ namespace Stridelonia
 
         public override void Draw(RenderContext context)
         {
-            if (Dispatcher.UIThread.CheckAccess())
-            {
-                Work();
-            }
-            else
-            {
-                Dispatcher.UIThread.InvokeAsync(Work, DispatcherPriority.MaxValue).Wait();
-            }
+            Work();
         }
 
         private void Work()
@@ -38,34 +31,34 @@ namespace Stridelonia
             foreach (var avaloniaStateKeyPair in ComponentDatas)
             {
                 var avaloniaComponent = avaloniaStateKeyPair.Key;
+                var platform = (WindowImpl)avaloniaComponent.Window.PlatformImpl;
                 var renderWindow = avaloniaStateKeyPair.Value.RenderWindow;
 
-                renderWindow.Enabled = avaloniaComponent.Window.IsVisible;
+                renderWindow.Enabled = platform.IsVisible;
 
                 if (renderWindow.Enabled)
                 {
-                    renderWindow.RenderGroup = WindowExtensions.GetRenderGroup(avaloniaComponent.Window);
+                    renderWindow.RenderGroup = platform.RenderGroup;
 
-                    renderWindow.Is2D = WindowExtensions.GetIs2D(avaloniaComponent.Window);
+                    renderWindow.Is2D = platform.Is2D;
 
                     renderWindow.Window = avaloniaComponent.Window;
-                    renderWindow.WindowTexture = ((WindowImpl)avaloniaComponent.Window.PlatformImpl).Texture;
+                    renderWindow.WindowTexture = platform.Texture;
 
-                    renderWindow.Topmost = avaloniaComponent.Window.Topmost;
-                    renderWindow.ZIndex = WindowExtensions.GetZIndex(avaloniaComponent.Window);
+                    renderWindow.Topmost = platform.IsTopmost;
+                    renderWindow.ZIndex = platform.ZIndex;
 
-                    var position = WindowExtensions.Get3DPosition(avaloniaComponent.Window);
+                    var position = platform.Position3D;
                     if (position != null)
                     {
-                        avaloniaComponent.Window.Position = new Avalonia.PixelPoint((int)position.Value.X, (int)position.Value.Y);
                         avaloniaComponent.Entity.Transform.Position = position.Value;
                     }
-                    else if (WindowExtensions.GetIs2D(avaloniaComponent.Window))
+                    else if (platform.Is2D)
                     {
-                        avaloniaComponent.Entity.Transform.Position = new Vector3(avaloniaComponent.Window.Position.ToStride(), 0);
+                        avaloniaComponent.Entity.Transform.Position = new Vector3(platform.Position.ToStride(), 0);
                     }
 
-                    var rotation = WindowExtensions.Get3DRotation(avaloniaComponent.Window);
+                    var rotation = platform.Rotation3D;
                     if (rotation != null)
                     {
                         avaloniaComponent.Entity.Transform.Rotation = rotation.Value;

@@ -1,10 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Avalonia;
-using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
@@ -13,7 +10,6 @@ using Stride.Core;
 using Stride.Core.Mathematics;
 using Stride.Games;
 using Stride.Input;
-using IInputDevice = Avalonia.Input.IInputDevice;
 using IMouseDevice = Stride.Input.IMouseDevice;
 using InputManager = Stride.Input.InputManager;
 using MouseButton = Stride.Input.MouseButton;
@@ -157,26 +153,6 @@ namespace Stridelonia.Input
             }, DispatcherPriority.Input);
         }
 
-        private RawPointerEventType ToAvalonia(PointerEventType type)
-        {
-            RawPointerEventType? rawType = null;
-            switch (type)
-            {
-                case PointerEventType.Pressed:
-                    rawType = RawPointerEventType.TouchBegin;
-                    break;
-                case PointerEventType.Released:
-                    rawType = RawPointerEventType.TouchEnd;
-                    break;
-                case PointerEventType.Moved:
-                    rawType = RawPointerEventType.TouchUpdate;
-                    break;
-                case PointerEventType.Canceled:
-                    rawType = RawPointerEventType.TouchCancel;
-                    break;
-            }
-            return rawType.Value;
-        }
         private RawPointerEventType ToAvalonia(MouseButton type, bool isDown)
         {
             RawPointerEventType? rawType = null;
