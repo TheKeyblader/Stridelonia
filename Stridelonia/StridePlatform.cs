@@ -57,6 +57,8 @@ namespace Stridelonia
                 .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>()
                 .Bind<IRenderLoop>().ToConstant(new RenderLoop())
                 .Bind<IRenderTimer>().ToConstant(new DefaultRenderTimer(60));
+
+            WindowExtensions.Init();
         }
 
         static StridePlatform()

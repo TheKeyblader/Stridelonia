@@ -40,6 +40,7 @@ namespace WindowsGame
                 ApplicationType = typeof(App),
                 ConfigureApp = (builder) => builder.UseReactiveUI().LogToTrace(),
                 UseMultiThreading = true,
+                UseDeferredRendering = false,
                 DrawFps = true
             };
         }

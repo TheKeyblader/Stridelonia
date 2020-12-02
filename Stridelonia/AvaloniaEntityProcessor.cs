@@ -66,6 +66,7 @@ namespace Stridelonia
 
                     avaloniaComponent.Entity.Transform.UpdateWorldMatrix();
                     renderWindow.WorldMatrix = avaloniaComponent.Entity.Transform.WorldMatrix;
+                    platform.WorldMatrix = renderWindow.WorldMatrix;
                 }
 
                 var isActive = (renderWindow.WindowTexture != null) && renderWindow.Enabled;

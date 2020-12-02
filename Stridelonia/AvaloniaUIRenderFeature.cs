@@ -45,6 +45,7 @@ namespace Stridelonia
 
         private SpriteBatch batch;
         private Sprite3DBatch batch3d;
+        private PickingSystem picking;
 
         public AvaloniaUIRenderFeature() : base()
         {
@@ -72,13 +73,11 @@ namespace Stridelonia
 
             if (Application.Current == null) StartAvalonia();
 
-            var picking = RenderSystem.Services.GetService<PickingSystem>();
+            picking = RenderSystem.Services.GetService<PickingSystem>();
             if (picking == null)
             {
-                var gameSytems = RenderSystem.Services.GetSafeServiceAs<IGameSystemCollection>();
                 picking = new PickingSystem(RenderSystem.Services);
                 RenderSystem.Services.AddService(picking);
-                gameSytems.Add(picking);
             }
         }
 
@@ -95,9 +94,21 @@ namespace Stridelonia
             }
         }
 
+        public override void Prepare(RenderDrawContext context)
+        {
+            base.Prepare(context);
+        }
+
         public override void Draw(RenderDrawContext context, RenderView renderView, RenderViewStage renderViewStage, int startIndex, int endIndex)
         {
             base.Draw(context, renderView, renderViewStage, startIndex, endIndex);
+
+            var cameraComponent = context.RenderContext.Tags.Get(CameraComponentRendererExtensions.Current);
+            if (cameraComponent != null)
+            {
+                picking.Camera = cameraComponent;
+                picking.Update();
+            }
 
             var windows = ((IClassicDesktopStyleApplicationLifetime)Application.Current.ApplicationLifetime)
                 .Windows.Select(w => (WindowImpl)w.PlatformImpl);
@@ -137,8 +148,10 @@ namespace Stridelonia
             if (Options.UseMultiThreading)
             {
                 _init = new EventWaitHandle(false, EventResetMode.ManualReset);
-                _avaloniaThread = new Thread(AvaloniaThread);
-                _avaloniaThread.Name = "Avalonia Thread";
+                _avaloniaThread = new Thread(AvaloniaThread)
+                {
+                    Name = "Avalonia Thread"
+                };
                 _avaloniaThread.Start(Options);
                 _init.WaitOne();
                 _init.Dispose();

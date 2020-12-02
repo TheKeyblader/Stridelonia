@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Security.Policy;
 using System.Text;
 using System.Threading.Tasks;
 using Avalonia;
@@ -32,7 +33,7 @@ namespace Stridelonia
         public static readonly AttachedProperty<Quaternion?> Rotation3DProperty = AvaloniaProperty.RegisterAttached<WindowExtensions, Window, Quaternion?>(
             "3DRotation", default, false, BindingMode.TwoWay);
 
-        static WindowExtensions()
+        internal static void Init()
         {
             RenderGroupProperty.Changed.Subscribe(e => ((WindowImpl)((Window)e.Sender).PlatformImpl).RenderGroup = e.NewValue.Value);
             ZIndexProperty.Changed.Subscribe(e => ((WindowImpl)((Window)e.Sender).PlatformImpl).ZIndex = e.NewValue.Value);

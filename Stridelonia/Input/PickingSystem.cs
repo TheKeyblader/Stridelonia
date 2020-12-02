@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Drawing.Drawing2D;
 using System.Linq;
+using System.Runtime.InteropServices;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Input;
@@ -8,15 +11,18 @@ using Avalonia.Input.Raw;
 using Avalonia.Threading;
 using Stride.Core;
 using Stride.Core.Mathematics;
-using Stride.Games;
+using Stride.Engine;
+using Stride.Graphics;
 using Stride.Input;
+using Stride.Physics;
 using IMouseDevice = Stride.Input.IMouseDevice;
 using InputManager = Stride.Input.InputManager;
+using Matrix = Stride.Core.Mathematics.Matrix;
 using MouseButton = Stride.Input.MouseButton;
 
 namespace Stridelonia.Input
 {
-    internal class PickingSystem : GameSystemBase
+    internal class PickingSystem
     {
         private IEnumerable<WindowImpl> all;
         private readonly InputManager input;
@@ -24,22 +30,20 @@ namespace Stridelonia.Input
         private WindowImpl focusedWindow;
         private WindowImpl hoveredWindow;
         private Vector2 lastMousePosition;
+        private Ray cameraRay;
 
-        public PickingSystem(IServiceRegistry registry) : base(registry)
+        public CameraComponent Camera { get; set; }
+
+        public PickingSystem(IServiceRegistry registry)
         {
             input = registry.GetService<InputManager>();
             input.TextInput?.EnabledTextInput();
-
-            Enabled = true;
-            Visible = false;
         }
 
         private ulong Timestamp => (ulong)(Environment.TickCount & int.MaxValue);
 
-        public override void Update(GameTime gameTime)
+        public void Update()
         {
-            base.Update(gameTime);
-
             all = ((IClassicDesktopStyleApplicationLifetime)Application.Current.ApplicationLifetime)
                 .Windows.Select(w => (WindowImpl)w.PlatformImpl);
 
@@ -53,7 +57,7 @@ namespace Stridelonia.Input
                 {
                     if (pointerEvent.EventType == PointerEventType.Pressed)
                     {
-                        var newFocusedWindow = Get2DWindow(lastMousePosition);
+                        var newFocusedWindow = Get2DWindow(lastMousePosition) ?? Get3DWindow();
 
                         if (focusedWindow != newFocusedWindow)
                         {
@@ -85,7 +89,9 @@ namespace Stridelonia.Input
                         if (pointerEvent.EventType == PointerEventType.Moved)
                         {
                             lastMousePosition = pointerEvent.AbsolutePosition;
-                            var newHoveredWindow = Get2DWindow(lastMousePosition);
+                            CalculateRay(lastMousePosition);
+
+                            var newHoveredWindow = Get2DWindow(lastMousePosition) ?? Get3DWindow();
 
                             if (hoveredWindow != newHoveredWindow)
                             {
@@ -101,7 +107,7 @@ namespace Stridelonia.Input
 
                             if (hoveredWindow != null)
                             {
-                                var position = pointerEvent.AbsolutePosition - hoveredWindow.Position.ToStride();
+                                var position = ScreenToWindowPoint(hoveredWindow, pointerEvent.AbsolutePosition);
                                 var inputRoot = hoveredWindow.InputRoot;
                                 SendEvents(hoveredWindow, new RawPointerEventArgs(hoveredWindow.MouseDevice, Timestamp,
                                     inputRoot, RawPointerEventType.Move, position.ToAvalonia(), modifiers));
@@ -111,7 +117,7 @@ namespace Stridelonia.Input
                 }
                 else if (_event is MouseButtonEvent mouseEvent && focusedWindow != null)
                 {
-                    var position = lastMousePosition - focusedWindow.Position.ToStride();
+                    var position = ScreenToWindowPoint(focusedWindow, lastMousePosition);
                     SendEvents(focusedWindow, new RawPointerEventArgs(focusedWindow.MouseDevice, Timestamp, focusedWindow.InputRoot, ToAvalonia(mouseEvent.Button, mouseEvent.IsDown),
                         position.ToAvalonia(), modifiers));
                 }
@@ -129,6 +135,30 @@ namespace Stridelonia.Input
             }
         }
 
+        private void CalculateRay(Vector2 screenPoint)
+        {
+            var viewport = new Viewport(0, 0, 1280, 720);
+
+            var unprojectedNear =
+                viewport.Unproject(
+                    new Vector3(screenPoint, 0.0f),
+                    Camera.ProjectionMatrix,
+                    Camera.ViewMatrix,
+                    Matrix.Identity);
+
+            var unprojectedFar =
+                viewport.Unproject(
+                    new Vector3(screenPoint, 1.0f),
+                    Camera.ProjectionMatrix,
+                    Camera.ViewMatrix,
+                    Matrix.Identity);
+
+            var vectorDir = unprojectedFar - unprojectedNear;
+            vectorDir.Normalize();
+
+            cameraRay = new Ray(unprojectedNear, vectorDir);
+        }
+
         private WindowImpl Get2DWindow(Vector2 pos)
         {
             var windows = all.Where(w => w.IsVisible && w.Is2D && w.HasInput);
@@ -143,6 +173,65 @@ namespace Stridelonia.Input
                     return window;
             }
             return null;
+        }
+
+        private WindowImpl Get3DWindow()
+        {
+            var windows = all.Where(w => w.IsVisible && !w.Is2D && w.HasInput);
+
+            foreach (var window in windows
+                .OrderByDescending(w => w.IsTopmost)
+                .ThenByDescending(w => w.ZIndex))
+            {
+                var size = new Vector3((window.ClientSize / 100).ToStride(), 0);
+                var matrix = window.WorldMatrix;
+
+                if (CollisionHelper.RayIntersectsRectangle(ref cameraRay, ref matrix, ref size, 2, out _))
+                    return window;
+            }
+
+            return null;
+        }
+
+        private Vector2 ScreenToWindowPoint(WindowImpl window, Vector2 screenPoint)
+        {
+            if (window.Is2D)
+            {
+                return screenPoint - window.Position.ToStride();
+            }
+            else
+            {
+                var size = new Vector3((window.ClientSize / 100).ToStride(), 0);
+                var matrix = window.WorldMatrix;
+
+                if (CollisionHelper.RayIntersectsRectangle(ref cameraRay, ref matrix, ref size, 2, out var intersectionPoint))
+                {
+                    matrix.Decompose(out _, out Matrix viewMatrix, out var translation);
+                    viewMatrix.Transpose();
+                    Vector3.TransformCoordinate(ref translation, ref viewMatrix, out translation);
+                    viewMatrix.TranslationVector = -translation;
+
+                    var projectionMatrix = Matrix.OrthoRH(size.X, size.Y, 0, 0);
+                    Matrix.Multiply(ref viewMatrix, ref projectionMatrix, out var viewProjectMatrix);
+
+                    Vector3.TransformCoordinate(ref intersectionPoint, ref viewProjectMatrix, out var clipPoint);
+                    Vector3.TransformCoordinate(ref intersectionPoint, ref viewMatrix, out var viewSpace);
+
+                    var windowPoint = new Vector3
+                    {
+                        X = (clipPoint.X + 1f) / 2f,
+                        Y = (clipPoint.Y + 1f) / 2f,
+                        Z = viewSpace.Z
+                    };
+
+                    return (windowPoint.XY() * window.ClientSize.ToStride());
+                }
+                else
+                {
+                    return new Vector2(-1, -1);
+                }
+
+            }
         }
 
         private void SendEvents(WindowImpl window, RawInputEventArgs args)

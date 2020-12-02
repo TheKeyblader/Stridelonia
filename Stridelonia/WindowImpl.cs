@@ -13,6 +13,7 @@ using Stride.Games;
 using Stride.Graphics;
 using Stride.Rendering;
 using Stridelonia.Implementation;
+using Matrix = Stride.Core.Mathematics.Matrix;
 using Point = Avalonia.Point;
 
 namespace Stridelonia
@@ -82,6 +83,7 @@ namespace Stridelonia
         internal bool HasInput { get; set; } = true;
         internal Vector3? Position3D { get; set; }
         internal Quaternion? Rotation3D { get; set; }
+        internal Matrix WorldMatrix { get; set; }
         #endregion
 
         public string Title { get; private set; }
