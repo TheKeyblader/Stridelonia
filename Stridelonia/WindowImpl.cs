@@ -275,5 +275,10 @@ namespace Stridelonia
                     break;
             }
         }
+
+        public void Show(bool activate)
+        {
+            IsVisible = true;
+        }
     }
 }

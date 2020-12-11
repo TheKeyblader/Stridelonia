@@ -5,15 +5,15 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Avalonia" Version="0.10.0-preview6" ExcludeAssets="build" />
-    <PackageReference Include="Avalonia.Desktop" Version="0.10.0-preview6" />
-    <PackageReference Include="Avalonia.Direct2D1" Version="0.10.0-preview6" />
-    <PackageReference Include="Stride.Engine" Version="4.0.0.1-beta04-1317" PrivateAssets="contentfiles;analyzers" />
+    <PackageReference Include="Avalonia" Version="0.10.0-rc1" ExcludeAssets="build" />
+    <PackageReference Include="Avalonia.Desktop" Version="0.10.0-rc1" />
+    <PackageReference Include="Avalonia.Direct2D1" Version="0.10.0-rc1" />
+    <PackageReference Include="Stride.Engine" Version="4.0.0.1-beta04-1347" PrivateAssets="contentfiles;analyzers" />
 
-    <PackageReference Include="Stride.Core" Version="4.0.0.1-beta04-1317" PrivateAssets="contentfiles;analyzers" />
+    <PackageReference Include="Stride.Core" Version="4.0.0.1-beta04-1347" PrivateAssets="contentfiles;analyzers" />
 
-    <PackageReference Include="Stride.Core.Assets.CompilerApp" Version="4.0.0.1-beta04-1317" PrivateAssets="contentfiles;analyzers" IncludeAssets="build" />
+    <PackageReference Include="Stride.Core.Assets.CompilerApp" Version="4.0.0.1-beta04-1347" PrivateAssets="contentfiles; analyzers" IncludeAssets="build" />
 
-    <PackageReference Include="Stride.Physics" Version="4.0.0.1-beta04-1317" />
+    <PackageReference Include="Stride.Physics" Version="4.0.0.1-beta04-1347" />
   </ItemGroup>
 </Project>
