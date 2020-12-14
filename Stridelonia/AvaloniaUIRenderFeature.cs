@@ -19,9 +19,6 @@ namespace Stridelonia
 {
     /// <summary>
     /// Define Avalonia configuration in Stride
-    /// <code>
-    /// 
-    /// </code>
     /// </summary>
     [AttributeUsage(AttributeTargets.Assembly, AllowMultiple = false, Inherited = false)]
     public class AvaloniaConfiguratorAttribute : Attribute

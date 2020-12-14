@@ -14,7 +14,6 @@ using Stride.Core.Mathematics;
 using Stride.Engine;
 using Stride.Graphics;
 using Stride.Input;
-using Stride.Physics;
 using IMouseDevice = Stride.Input.IMouseDevice;
 using InputManager = Stride.Input.InputManager;
 using Matrix = Stride.Core.Mathematics.Matrix;

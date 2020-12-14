@@ -2,6 +2,9 @@
 
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
+    <StrideRuntime>true</StrideRuntime>
+    <StrideAssemblyProcessor>true</StrideAssemblyProcessor>
+
     <Version>0.2.0-alpha</Version>
     <Authors>Jean-François Pustay</Authors>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
@@ -22,17 +25,14 @@
     <PackageReference Include="Avalonia" Version="0.10.0-rc1" ExcludeAssets="build" />
     <PackageReference Include="Avalonia.Desktop" Version="0.10.0-rc1" />
     <PackageReference Include="Avalonia.Direct2D1" Version="0.10.0-rc1" />
+    
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    
     <PackageReference Include="Stride.Engine" Version="4.0.0.1-beta04-1347" PrivateAssets="contentfiles;analyzers" />
-
     <PackageReference Include="Stride.Core" Version="4.0.0.1-beta04-1347" PrivateAssets="contentfiles;analyzers" />
-
-    <PackageReference Include="Stride.Core.Assets.CompilerApp" Version="4.0.0.1-beta04-1347" PrivateAssets="contentfiles; analyzers" IncludeAssets="build" />
-
-    <PackageReference Include="Stride.Physics" Version="4.0.0.1-beta04-1347" />
   </ItemGroup>
 
   <PropertyGroup Condition="'$(GITHUB_ACTIONS)' == 'true'">
