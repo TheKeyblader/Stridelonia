@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
-    <Version>0.1.0-alpha</Version>
+    <Version>0.2.0-alpha</Version>
     <Authors>Jean-François Pustay</Authors>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <Description>Stride plugin which allows running Avalonia on Stride</Description>

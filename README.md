@@ -6,7 +6,7 @@ Stride plugin which allows running Avalonia on Stride
 - Support only Windows (D3D11)
 - WIP
 - Not Stable
-- Not compatible with Game Studio actually
+- Not working in GameStudio (self-disabling to not crash the GameStudio)
 
 ## Contributing
 
