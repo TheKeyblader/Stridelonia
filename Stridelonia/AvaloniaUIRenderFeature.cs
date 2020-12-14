@@ -14,6 +14,7 @@ using Stridelonia.Input;
 using System.Collections.Generic;
 using Avalonia.Threading;
 using Stride.Core.Extensions;
+using Stride.Core.Diagnostics;
 
 namespace Stridelonia
 {
@@ -44,7 +45,7 @@ namespace Stridelonia
         private Sprite3DBatch batch3d;
         private PickingSystem picking;
 
-        private bool isInEditor;
+        private bool isInited;
 
         public AvaloniaUIRenderFeature() : base()
         {
@@ -59,10 +60,8 @@ namespace Stridelonia
             var game = RenderSystem.Services.GetService<IGame>();
 
             if (game.GetType().Name.Contains("Editor", StringComparison.OrdinalIgnoreCase))
-            {
-                isInEditor = true;
                 return;
-            }
+            if (Options == null) return;
 
             AvaloniaLocator.CurrentMutable.BindToSelf(game);
 
@@ -86,13 +85,16 @@ namespace Stridelonia
                 picking = new PickingSystem(RenderSystem.Services);
                 RenderSystem.Services.AddService(picking);
             }
+
+            if (Application.Current != null) isInited = true;
+
         }
 
         public override void Unload()
         {
             base.Unload();
 
-            if (isInEditor) return;
+            if (!isInited) return;
 
             if (Application.Current.ApplicationLifetime is IControlledApplicationLifetime controlledLifetime)
             {
@@ -107,7 +109,7 @@ namespace Stridelonia
         {
             base.Draw(context, renderView, renderViewStage, startIndex, endIndex);
 
-            if (isInEditor) return;
+            if (!isInited) return;
 
             var cameraComponent = context.RenderContext.Tags.Get(CameraComponentRendererExtensions.Current);
             if (cameraComponent != null)
@@ -151,6 +153,13 @@ namespace Stridelonia
 
         private void StartAvalonia()
         {
+            if (Options.ConfigureApp == null || Options.ApplicationType == null)
+            {
+                var logger = GlobalLogger.GetLogger("Stridelonia");
+                logger.Debug("No Application in StridePlatformOptions");
+                return;
+            }
+
             if (Options.UseMultiThreading)
             {
                 _init = new EventWaitHandle(false, EventResetMode.ManualReset);
@@ -213,8 +222,15 @@ namespace Stridelonia
             var configuratorConstructor =
                 AppDomain.CurrentDomain.GetAssemblies()
                     .SelectMany(a => a.GetCustomAttributes<AvaloniaConfiguratorAttribute>())
-                    .Single().ConfiguratorType.GetTypeInfo().DeclaredConstructors
+                    .SingleOrDefault()?.ConfiguratorType.GetTypeInfo().DeclaredConstructors
                     .Where(c => c.GetParameters().Length == 0 && !c.IsStatic).Single();
+
+            if (configuratorConstructor == null)
+            {
+                var logger = GlobalLogger.GetLogger("Stridelonia");
+                logger.Debug("No Application configurator found");
+                return null;
+            }
 
             var configuratorMethod = configuratorConstructor.DeclaringType.GetTypeInfo().DeclaredMethods
                 .Single(m => m.GetParameters().Length == 0 && m.ReturnType == typeof(StridePlatformOptions));
