@@ -47,6 +47,8 @@ namespace Stridelonia
         private Sprite3DBatch batch3d;
         private PickingSystem picking;
 
+        private bool isInEditor;
+
         public AvaloniaUIRenderFeature() : base()
         {
             Options = AvaloniaLocator.Current.GetService<StridePlatformOptions>() ?? GetOptions();
@@ -57,7 +59,15 @@ namespace Stridelonia
         {
             base.InitializeCore();
 
-            AvaloniaLocator.CurrentMutable.BindToSelf(RenderSystem.Services.GetService<IGame>());
+            var game = RenderSystem.Services.GetService<IGame>();
+
+            if (game.GetType().Name.Contains("Editor", StringComparison.OrdinalIgnoreCase))
+            {
+                isInEditor = true;
+                return;
+            }
+
+            AvaloniaLocator.CurrentMutable.BindToSelf(game);
 
             var dispatcher = RenderSystem.Services.GetService<StrideDispatcher>();
             if (dispatcher == null)
@@ -85,6 +95,8 @@ namespace Stridelonia
         {
             base.Unload();
 
+            if (isInEditor) return;
+
             if (Application.Current.ApplicationLifetime is IControlledApplicationLifetime controlledLifetime)
             {
                 Dispatcher.UIThread.Post(() =>
@@ -94,14 +106,11 @@ namespace Stridelonia
             }
         }
 
-        public override void Prepare(RenderDrawContext context)
-        {
-            base.Prepare(context);
-        }
-
         public override void Draw(RenderDrawContext context, RenderView renderView, RenderViewStage renderViewStage, int startIndex, int endIndex)
         {
             base.Draw(context, renderView, renderViewStage, startIndex, endIndex);
+
+            if (isInEditor) return;
 
             var cameraComponent = context.RenderContext.Tags.Get(CameraComponentRendererExtensions.Current);
             if (cameraComponent != null)
