@@ -22,7 +22,7 @@ namespace Avalonia
 
     public class StridePlatformOptions
     {
-        public bool UseMultiThreading { get; set; }
+        public bool UseMultiThreading { get; set; } = true;
         public bool UseDeferredRendering { get; set; } = true;
         public bool DrawFps { get; set; }
         public Type ApplicationType { get; set; }

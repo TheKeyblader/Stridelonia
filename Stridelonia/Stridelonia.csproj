@@ -1,13 +1,29 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net461;netcoreapp3.1</TargetFrameworks>
+    <TargetFramework>net5.0</TargetFramework>
+    <Version>0.1.0-alpha</Version>
+    <Authors>Jean-François Pustay</Authors>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <Description>Stride plugin which allows running Avalonia on Stride</Description>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>Stride;Avalonia;Stridelonia;UI</PackageTags>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <!-- Embed source files that are not tracked by the source control manager in the PDB -->
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <!-- Recommended: Embed symbols containing Source Link in the main file (exe/dll) -->
+    <DebugType>embedded</DebugType>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Avalonia" Version="0.10.0-rc1" ExcludeAssets="build" />
     <PackageReference Include="Avalonia.Desktop" Version="0.10.0-rc1" />
     <PackageReference Include="Avalonia.Direct2D1" Version="0.10.0-rc1" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="Stride.Engine" Version="4.0.0.1-beta04-1347" PrivateAssets="contentfiles;analyzers" />
 
     <PackageReference Include="Stride.Core" Version="4.0.0.1-beta04-1347" PrivateAssets="contentfiles;analyzers" />
