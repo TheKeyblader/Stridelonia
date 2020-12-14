@@ -219,24 +219,26 @@ namespace Stridelonia
 
         private StridePlatformOptions GetOptions()
         {
-            var configuratorConstructor =
-                AppDomain.CurrentDomain.GetAssemblies()
-                    .SelectMany(a => a.GetCustomAttributes<AvaloniaConfiguratorAttribute>())
-                    .SingleOrDefault()?.ConfiguratorType.GetTypeInfo().DeclaredConstructors
-                    .Where(c => c.GetParameters().Length == 0 && !c.IsStatic).Single();
+            try
+            {
+                var configuratorConstructor =
+                    AppDomain.CurrentDomain.GetAssemblies()
+                        .SelectMany(a => a.GetCustomAttributes<AvaloniaConfiguratorAttribute>())
+                        .Single().ConfiguratorType.GetTypeInfo().DeclaredConstructors
+                        .Where(c => c.GetParameters().Length == 0 && !c.IsStatic).Single();
 
-            if (configuratorConstructor == null)
+                var configuratorMethod = configuratorConstructor.DeclaringType.GetTypeInfo().DeclaredMethods
+                    .Single(m => m.GetParameters().Length == 0 && m.ReturnType == typeof(StridePlatformOptions));
+
+                var instance = configuratorConstructor.Invoke(Array.Empty<object>());
+                return (StridePlatformOptions)configuratorMethod.Invoke(instance, Array.Empty<object>());
+            }
+            catch (InvalidOperationException)
             {
                 var logger = GlobalLogger.GetLogger("Stridelonia");
                 logger.Debug("No Application configurator found");
                 return null;
             }
-
-            var configuratorMethod = configuratorConstructor.DeclaringType.GetTypeInfo().DeclaredMethods
-                .Single(m => m.GetParameters().Length == 0 && m.ReturnType == typeof(StridePlatformOptions));
-
-            var instance = configuratorConstructor.Invoke(Array.Empty<object>());
-            return (StridePlatformOptions)configuratorMethod.Invoke(instance, Array.Empty<object>());
         }
     }
 }
