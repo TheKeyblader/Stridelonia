@@ -36,48 +36,18 @@ namespace Stridelonia
     {
         public override Type SupportedRenderObjectType => typeof(RenderAvaloniaWindow);
 
-        public StridePlatformOptions Options { get; }
-
-        private Thread _avaloniaThread;
-        private EventWaitHandle _init;
-
         private SpriteBatch batch;
         private Sprite3DBatch batch3d;
         private PickingSystem picking;
-
-        private bool isInited;
-
-        public AvaloniaUIRenderFeature() : base()
-        {
-            Options = AvaloniaLocator.Current.GetService<StridePlatformOptions>() ?? GetOptions();
-            AvaloniaLocator.CurrentMutable.BindToSelf(Options);
-        }
 
         protected override void InitializeCore()
         {
             base.InitializeCore();
 
-            var game = RenderSystem.Services.GetService<IGame>();
-
-            if (game.GetType().Name.Contains("Editor", StringComparison.OrdinalIgnoreCase))
-                return;
-            if (Options == null) return;
-
-            AvaloniaLocator.CurrentMutable.BindToSelf(game);
-
-            var dispatcher = RenderSystem.Services.GetService<StrideDispatcher>();
-            if (dispatcher == null)
-            {
-                var gameSytems = RenderSystem.Services.GetSafeServiceAs<IGameSystemCollection>();
-                dispatcher = new StrideDispatcher(RenderSystem.Services);
-                RenderSystem.Services.AddService(dispatcher);
-                gameSytems.Add(dispatcher);
-            }
+            if (Application.Current == null) return;
 
             batch = new SpriteBatch(Context.GraphicsDevice);
             batch3d = new Sprite3DBatch(Context.GraphicsDevice);
-
-            if (Application.Current == null) StartAvalonia();
 
             picking = RenderSystem.Services.GetService<PickingSystem>();
             if (picking == null)
@@ -85,31 +55,13 @@ namespace Stridelonia
                 picking = new PickingSystem(RenderSystem.Services);
                 RenderSystem.Services.AddService(picking);
             }
-
-            if (Application.Current != null) isInited = true;
-
-        }
-
-        public override void Unload()
-        {
-            base.Unload();
-
-            if (!isInited) return;
-
-            if (Application.Current.ApplicationLifetime is IControlledApplicationLifetime controlledLifetime)
-            {
-                Dispatcher.UIThread.Post(() =>
-                {
-                    controlledLifetime.Shutdown();
-                });
-            }
         }
 
         public override void Draw(RenderDrawContext context, RenderView renderView, RenderViewStage renderViewStage, int startIndex, int endIndex)
         {
             base.Draw(context, renderView, renderViewStage, startIndex, endIndex);
 
-            if (!isInited) return;
+            if (Application.Current == null) return;
 
             var cameraComponent = context.RenderContext.Tags.Get(CameraComponentRendererExtensions.Current);
             if (cameraComponent != null)
@@ -149,96 +101,6 @@ namespace Stridelonia
             }
             batch3d.End();
             batch.End();
-        }
-
-        private void StartAvalonia()
-        {
-            if (Options.ConfigureApp == null || Options.ApplicationType == null)
-            {
-                var logger = GlobalLogger.GetLogger("Stridelonia");
-                logger.Debug("No Application in StridePlatformOptions");
-                return;
-            }
-
-            if (Options.UseMultiThreading)
-            {
-                _init = new EventWaitHandle(false, EventResetMode.ManualReset);
-                _avaloniaThread = new Thread(AvaloniaThread)
-                {
-                    Name = "Avalonia Thread"
-                };
-                _avaloniaThread.Start(Options);
-                _init.WaitOne();
-                _init.Dispose();
-            }
-            else
-            {
-                var builderType = typeof(AppBuilderBase<>).MakeGenericType(typeof(AppBuilder));
-                var configureMethod = builderType.GetMethod(nameof(AppBuilder.Configure), BindingFlags.Public | BindingFlags.Static, null, new Type[0], null);
-                var builder = (AppBuilder)configureMethod.MakeGenericMethod(Options.ApplicationType).Invoke(null, new object[0]);
-
-                builder
-                    .UseStride()
-                    .UseDirect2D1();
-                Options.ConfigureApp(builder);
-
-                var lifetime = new ClassicDesktopStyleApplicationLifetime
-                {
-                    Args = Environment.GetCommandLineArgs(),
-                    ShutdownMode = ShutdownMode.OnExplicitShutdown
-                };
-                builder.SetupWithLifetime(lifetime);
-                lifetime.Start(Environment.GetCommandLineArgs());
-            }
-        }
-
-        private void AvaloniaThread(object parameter)
-        {
-            var options = (StridePlatformOptions)parameter;
-
-            var builderType = typeof(AppBuilderBase<>).MakeGenericType(typeof(AppBuilder));
-            var configureMethod = builderType.GetMethod(nameof(AppBuilder.Configure), BindingFlags.Public | BindingFlags.Static, null, new Type[0], null);
-            var builder = (AppBuilder)configureMethod.MakeGenericMethod(options.ApplicationType).Invoke(null, new object[0]);
-
-            builder
-                .UseStride()
-                .UseDirect2D1();
-            options.ConfigureApp(builder);
-
-            var lifetime = new ClassicDesktopStyleApplicationLifetime
-            {
-                Args = Environment.GetCommandLineArgs(),
-                ShutdownMode = ShutdownMode.OnExplicitShutdown
-            };
-            builder.SetupWithLifetime(lifetime);
-
-            _init.Set();
-
-            lifetime.Start(Environment.GetCommandLineArgs());
-        }
-
-        private StridePlatformOptions GetOptions()
-        {
-            try
-            {
-                var configuratorConstructor =
-                    AppDomain.CurrentDomain.GetAssemblies()
-                        .SelectMany(a => a.GetCustomAttributes<AvaloniaConfiguratorAttribute>())
-                        .Single().ConfiguratorType.GetTypeInfo().DeclaredConstructors
-                        .Where(c => c.GetParameters().Length == 0 && !c.IsStatic).Single();
-
-                var configuratorMethod = configuratorConstructor.DeclaringType.GetTypeInfo().DeclaredMethods
-                    .Single(m => m.GetParameters().Length == 0 && m.ReturnType == typeof(StridePlatformOptions));
-
-                var instance = configuratorConstructor.Invoke(Array.Empty<object>());
-                return (StridePlatformOptions)configuratorMethod.Invoke(instance, Array.Empty<object>());
-            }
-            catch (InvalidOperationException)
-            {
-                var logger = GlobalLogger.GetLogger("Stridelonia");
-                logger.Debug("No Application configurator found");
-                return null;
-            }
         }
     }
 }
