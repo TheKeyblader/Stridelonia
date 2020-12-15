@@ -19,7 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Samples\WindowsGame\WindowsGame.csproj" />
     <ProjectReference Include="..\Stridelonia\Stridelonia.csproj" />
-    <ProjectReference Include="..\TodoApp\TodoApp.csproj" />
   </ItemGroup>
 </Project>

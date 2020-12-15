@@ -8,9 +8,8 @@ namespace Stridelonia.Samples
     {
         static void Main(string[] args)
         {
-            using (var game = new Game())
+            using (var game = new StrideloniaGame())
             {
-                game.GraphicsDeviceManager.DeviceCreationFlags = Stride.Graphics.DeviceCreationFlags.BgraSupport;
                 game.Run();
             }
         }
