@@ -12,6 +12,7 @@ using Avalonia.Threading;
 using Stride.Core;
 using Stride.Core.Mathematics;
 using Stride.Engine;
+using Stride.Games;
 using Stride.Graphics;
 using Stride.Input;
 using IMouseDevice = Stride.Input.IMouseDevice;
@@ -21,28 +22,42 @@ using MouseButton = Stride.Input.MouseButton;
 
 namespace Stridelonia.Input
 {
-    internal class PickingSystem
+    internal class PickingSystem : GameSystemBase
     {
         private IEnumerable<WindowImpl> all;
         private readonly InputManager input;
+        private readonly IGraphicsDeviceService graphicsDeviceService;
 
         private WindowImpl focusedWindow;
         private WindowImpl hoveredWindow;
         private Vector2 lastMousePosition;
+
         private Ray cameraRay;
 
         public CameraComponent Camera { get; set; }
 
-        public PickingSystem(IServiceRegistry registry)
+        public PickingSystem(IServiceRegistry registry) : base(registry)
         {
             input = registry.GetService<InputManager>();
             input.TextInput?.EnabledTextInput();
+
+            graphicsDeviceService = registry.GetService<IGraphicsDeviceService>();
+
+            Enabled = true;
+            Visible = false;
         }
 
         private ulong Timestamp => (ulong)(Environment.TickCount & int.MaxValue);
 
-        public void Update()
+        public override void Update(GameTime gameTime)
         {
+            base.Update(gameTime);
+
+            var scene = Services.GetService<SceneSystem>();
+            Camera = scene.GraphicsCompositor.Cameras[0].Camera;
+
+            if (Camera == null) return;
+
             all = ((IClassicDesktopStyleApplicationLifetime)Application.Current.ApplicationLifetime)
                 .Windows.Select(w => (WindowImpl)w.PlatformImpl);
 
@@ -56,7 +71,7 @@ namespace Stridelonia.Input
                 {
                     if (pointerEvent.EventType == PointerEventType.Pressed)
                     {
-                        var newFocusedWindow = Get2DWindow(lastMousePosition) ?? Get3DWindow();
+                        var newFocusedWindow = Get2DWindow(lastMousePosition) ?? Get3DWindow(lastMousePosition);
 
                         if (focusedWindow != newFocusedWindow)
                         {
@@ -90,7 +105,7 @@ namespace Stridelonia.Input
                             lastMousePosition = pointerEvent.AbsolutePosition;
                             CalculateRay(lastMousePosition);
 
-                            var newHoveredWindow = Get2DWindow(lastMousePosition) ?? Get3DWindow();
+                            var newHoveredWindow = Get2DWindow(lastMousePosition) ?? Get3DWindow(lastMousePosition);
 
                             if (hoveredWindow != newHoveredWindow)
                             {
@@ -132,38 +147,77 @@ namespace Stridelonia.Input
                     SendEvents(focusedWindow, new RawTextInputEventArgs(KeyboardDevice.Instance, Timestamp, focusedWindow.InputRoot, textEvent.Text));
                 }
             }
+
+            if (input.Events.Count == 0)
+            {
+                var newHoveredWindow = Get2DWindow(lastMousePosition) ?? Get3DWindow(lastMousePosition);
+
+                if (hoveredWindow != newHoveredWindow)
+                {
+                    if (hoveredWindow != null)
+                    {
+                        var inputRoot = hoveredWindow.InputRoot;
+                        SendEvents(hoveredWindow, new RawPointerEventArgs(hoveredWindow.MouseDevice, Timestamp,
+                            inputRoot, RawPointerEventType.LeaveWindow, new Avalonia.Point(-1, -1), modifiers));
+                    }
+
+                    hoveredWindow = newHoveredWindow;
+
+                    if (hoveredWindow != null)
+                    {
+                        var position = ScreenToWindowPoint(hoveredWindow, lastMousePosition);
+                        var inputRoot = hoveredWindow.InputRoot;
+                        SendEvents(hoveredWindow, new RawPointerEventArgs(hoveredWindow.MouseDevice, Timestamp,
+                            inputRoot, RawPointerEventType.Move, position.ToAvalonia(), modifiers));
+                    }
+                }
+            }
         }
 
-        private void CalculateRay(Vector2 screenPoint)
+        private void CalculateRay(Vector2 screenPos)
         {
-            var viewport = new Viewport(0, 0, 1280, 720);
+            var graphicsDevice = graphicsDeviceService?.GraphicsDevice;
+            if (graphicsDevice == null)
+            {
+                cameraRay = new Ray(new Vector3(float.NegativeInfinity), new Vector3(0, 1, 0));
+                return;
+            }
 
-            var unprojectedNear =
-                viewport.Unproject(
-                    new Vector3(screenPoint, 0.0f),
-                    Camera.ProjectionMatrix,
-                    Camera.ViewMatrix,
-                    Matrix.Identity);
+            screenPos.X /= graphicsDevice.Presenter.BackBuffer.Width;
+            screenPos.Y /= graphicsDevice.Presenter.BackBuffer.Height;
 
-            var unprojectedFar =
-                viewport.Unproject(
-                    new Vector3(screenPoint, 1.0f),
-                    Camera.ProjectionMatrix,
-                    Camera.ViewMatrix,
-                    Matrix.Identity);
+            Matrix invViewProj = Matrix.Invert(Camera.ViewProjectionMatrix);
 
-            var vectorDir = unprojectedFar - unprojectedNear;
-            vectorDir.Normalize();
+            // Reconstruct the projection-space position in the (-1, +1) range.
+            //    Don't forget that Y is down in screen coordinates, but up in projection space
+            Vector3 sPos;
+            sPos.X = screenPos.X * 2f - 1f;
+            sPos.Y = 1f - screenPos.Y * 2f;
 
-            cameraRay = new Ray(unprojectedNear, vectorDir);
+            // Compute the near (start) point for the raycast
+            // It's assumed to have the same projection space (x,y) coordinates and z = 0 (lying on the near plane)
+            // We need to unproject it to world space
+            sPos.Z = 0f;
+            var vectorNear = Vector3.Transform(sPos, invViewProj);
+            vectorNear /= vectorNear.W;
+
+            // Compute the far (end) point for the raycast
+            // It's assumed to have the same projection space (x,y) coordinates and z = 1 (lying on the far plane)
+            // We need to unproject it to world space
+            sPos.Z = 1f;
+            var vectorFar = Vector3.Transform(sPos, invViewProj);
+            vectorFar /= vectorFar.W;
+
+            var rayDirection = Vector3.Normalize(vectorFar.XYZ() - vectorNear.XYZ());
+
+            cameraRay = new Ray(vectorNear.XYZ(), rayDirection);
         }
 
         private WindowImpl Get2DWindow(Vector2 pos)
         {
             var windows = all.Where(w => w.IsVisible && w.Is2D && w.HasInput);
-            foreach (var window in windows
-                .OrderByDescending(w => w.IsTopmost)
-                .ThenByDescending(w => w.ZIndex))
+            var orderedWindows = windows.OrderByDescending(w => w.IsTopmost).ThenByDescending(w => w.ZIndex);
+            foreach (var window in orderedWindows)
             {
                 var position = window.Position.ToStride();
                 var size = window.ClientSize.ToStride();
@@ -174,7 +228,7 @@ namespace Stridelonia.Input
             return null;
         }
 
-        private WindowImpl Get3DWindow()
+        private WindowImpl Get3DWindow(Vector2 pos)
         {
             var windows = all.Where(w => w.IsVisible && !w.Is2D && w.HasInput);
 

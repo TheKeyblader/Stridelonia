@@ -13,8 +13,7 @@ namespace WindowsGame
 
         public static AppBuilder BuildAvaloniaApp() =>
             AppBuilder.Configure<App>()
-                .UseWin32()
-                .UseDirect2D1()
+                .UsePlatformDetect()
                 .UseReactiveUI()
                 .LogToTrace();
     }

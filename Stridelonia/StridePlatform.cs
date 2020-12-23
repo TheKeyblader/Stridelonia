@@ -8,8 +8,10 @@ using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
 using Avalonia.Platform;
 using Avalonia.Rendering;
+using Avalonia.Threading;
 using Stride.Engine;
 using Stride.Games;
+using Stride.Rendering;
 using Stridelonia.Implementation;
 
 namespace Avalonia
@@ -18,15 +20,6 @@ namespace Avalonia
     {
         public static AppBuilder UseStride(this AppBuilder builder)
             => builder.UseWindowingSubsystem(() => Stridelonia.StridePlatform.Initialize(), "Stride");
-    }
-
-    public class StridePlatformOptions
-    {
-        public bool UseMultiThreading { get; set; } = true;
-        public bool UseDeferredRendering { get; set; } = true;
-        public bool DrawFps { get; set; }
-        public Type ApplicationType { get; set; }
-        public Action<AppBuilder> ConfigureApp { get; set; }
     }
 }
 
@@ -58,29 +51,17 @@ namespace Stridelonia
                 .Bind<IRenderLoop>().ToConstant(new RenderLoop())
                 .Bind<IRenderTimer>().ToConstant(new DefaultRenderTimer(60));
 
-            WindowExtensions.Init();
+            InitEvents();
         }
 
-        static StridePlatform()
+        private static void InitEvents()
         {
-            Window.WindowOpenedEvent.AddClassHandler(typeof(Window), OnWindowOpened);
-        }
-
-        private static void OnWindowOpened(object sender, RoutedEventArgs e)
-        {
-
-            var window = (Window)sender;
-            if (!WindowExtensions.GetStrideInited(window))
-            {
-                var game = AvaloniaLocator.Current.GetService<IGame>();
-                var scene = game.Services.GetService<SceneSystem>().SceneInstance.RootScene;
-
-                var entity = new Entity();
-                entity.Add(new AvaloniaComponent { Window = window });
-                scene.Entities.Add(entity);
-
-                WindowExtensions.SetStrideInited(window, true);
-            }
+            WindowExtensions.RenderGroupProperty.Changed.Subscribe(e => ContainerManager.ChangeRenderGroup(((WindowImpl)((Window)e.Sender).PlatformImpl), (RenderGroup)e.NewValue.Value));
+            WindowExtensions.ZIndexProperty.Changed.Subscribe(e => ((WindowImpl)((Window)e.Sender).PlatformImpl).ZIndex = e.NewValue.Value);
+            WindowExtensions.Is2DProperty.Changed.Subscribe(e => ContainerManager.ChangeSpace(((WindowImpl)((Window)e.Sender).PlatformImpl), e.NewValue.Value));
+            WindowExtensions.HasInputProperty.Changed.Subscribe(e => ((WindowImpl)((Window)e.Sender).PlatformImpl).HasInput = e.NewValue.Value);
+            WindowExtensions.Position3DProperty.Changed.Subscribe(e => ContainerManager.ChangePosition(((WindowImpl)((Window)e.Sender).PlatformImpl), e.NewValue.Value));
+            WindowExtensions.Rotation3DProperty.Changed.Subscribe(e => ContainerManager.ChangeRotation(((WindowImpl)((Window)e.Sender).PlatformImpl), e.NewValue.Value));
         }
 
         public IWindowImpl CreateEmbeddableWindow()

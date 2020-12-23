@@ -13,10 +13,6 @@ namespace WindowsGame.Views
     {
         public MainWindow()
         {
-            WindowExtensions.SetRenderGroup(this, Stride.Rendering.RenderGroup.Group31);
-            WindowExtensions.SetIs2D(this, false);
-            WindowExtensions.Set3DPosition(this, new Vector3());
-
             InitializeComponent();
 #if DEBUG
             this.AttachDevTools();

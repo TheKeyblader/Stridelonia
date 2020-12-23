@@ -7,19 +7,22 @@ using Avalonia.Input.Raw;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Threading;
-using SharpDX.Direct2D1.Effects;
 using Stride.Core.Mathematics;
-using Stride.Games;
+using Stride.Engine;
 using Stride.Graphics;
 using Stride.Rendering;
+using Stride.UI;
+using Stride.UI.Controls;
 using Stridelonia.Implementation;
 using Matrix = Stride.Core.Mathematics.Matrix;
 using Point = Avalonia.Point;
+using Thickness = Avalonia.Thickness;
 
 namespace Stridelonia
 {
-    public class WindowImpl : IWindowImpl
+    internal class WindowImpl : IWindowImpl
     {
+        #region Avalonia
         private WindowState _windowState;
         public WindowState WindowState { get => _windowState; set => SetWindowState(value); }
         public Action<WindowState> WindowStateChanged { get; set; }
@@ -32,9 +35,9 @@ namespace Stridelonia
 
         public bool NeedsManagedDecorations => true;
 
-        public Thickness ExtendedMargins => new Thickness(0);
+        public Thickness ExtendedMargins => new(0);
 
-        public Thickness OffScreenMargin => new Thickness(0);
+        public Thickness OffScreenMargin => new(0);
 
         public double DesktopScaling => 1;
 
@@ -52,7 +55,7 @@ namespace Stridelonia
 
         public IScreenImpl Screen { get; }
 
-        public Size ClientSize { get; internal set; }
+        public Size ClientSize { get; private set; }
 
         public double RenderScaling => 1;
 
@@ -70,43 +73,61 @@ namespace Stridelonia
 
         public WindowTransparencyLevel TransparencyLevel => WindowTransparencyLevel.Transparent;
 
-        public AcrylicPlatformCompensationLevels AcrylicCompensationLevels => new AcrylicPlatformCompensationLevels();
-
-        internal IInputRoot InputRoot { get; private set; }
-
-        #region Internal Data
-        internal RenderGroup RenderGroup { get; set; }
-        internal bool IsVisible { get; private set; }
-        internal bool IsTopmost { get; private set; }
-        internal int ZIndex { get; set; }
-        internal bool Is2D { get; set; } = true;
-        internal bool HasInput { get; set; } = true;
-        internal Vector3? Position3D { get; set; }
-        internal Quaternion? Rotation3D { get; set; }
-        internal Matrix WorldMatrix { get; set; }
+        public AcrylicPlatformCompensationLevels AcrylicCompensationLevels => new();
         #endregion
 
-        public string Title { get; private set; }
+        public IInputRoot InputRoot { get; private set; }
 
-        private readonly StrideExternalRenderTarget renderTarget;
-        public Texture Texture => renderTarget.Texture;
+        #region Internal Data
+        public RenderGroup RenderGroup { get; set; }
+
+        public bool IsVisible
+        {
+            get => RenderingElement.IsVisible;
+            set => RenderingElement.Visibility = value ? Visibility.Visible : Visibility.Hidden;
+        }
+
+        public bool IsTopmost { get; private set; }
+        public short ZIndex
+        {
+            get => (short)RenderingElement.GetPanelZIndex();
+            set => RenderingElement.SetPanelZIndex(value);
+        }
+        public bool Is2D { get; set; } = true;
+        public bool HasInput { get; set; } = true;
+        public Matrix WorldMatrix => ContainerManager.GetMatrix(this);
+        #endregion
+
+        private readonly IAvaloniaRenderer renderTarget;
+        public ImageElement RenderingElement { get; }
 
         public WindowImpl()
         {
             Screen = new ScreenImpl();
             MouseDevice = new MouseDevice(new Pointer(Pointer.GetNextFreeId(), PointerType.Mouse, true));
 
-            var game = AvaloniaLocator.Current.GetService<IGame>();
-            renderTarget = new StrideExternalRenderTarget(game.GraphicsDevice)
-            {
-                ClientSize = ClientSize
-            };
+            renderTarget = CreateRenderer();
             Surfaces = new object[] { renderTarget };
+
+            RenderingElement = new ImageElement
+            {
+                Source = renderTarget.SpriteProvider
+            };
+
+            ContainerManager.AddWindow(this);
+        }
+
+        private IAvaloniaRenderer CreateRenderer()
+        {
+            return GraphicsDevice.Platform switch
+            {
+                _ => new GenericAvaloniaRenderer(),
+            };
         }
 
         public void Activate()
         {
-            throw new NotImplementedException();
+
         }
 
         public void BeginMoveDrag(PointerPressedEventArgs e)
@@ -164,6 +185,7 @@ namespace Stridelonia
         public void Move(PixelPoint point)
         {
             Position = point;
+            RenderingElement.SetCanvasAbsolutePosition(new Vector3(point.ToStride(), 0));
             PositionChanged?.Invoke(point);
         }
 
@@ -180,8 +202,7 @@ namespace Stridelonia
         public void Resize(Size clientSize)
         {
             ClientSize = clientSize;
-            renderTarget.DestroyRenderTarget();
-            renderTarget.ClientSize = clientSize;
+            renderTarget.Size = new Size2((int)clientSize.Width, (int)clientSize.Height);
             Resized?.Invoke(clientSize);
         }
 
@@ -192,7 +213,7 @@ namespace Stridelonia
 
         public void SetEnabled(bool enable)
         {
-            throw new NotImplementedException();
+            RenderingElement.IsEnabled = enable;
         }
 
         public void SetExtendClientAreaChromeHints(ExtendClientAreaChromeHints hints)
@@ -225,7 +246,7 @@ namespace Stridelonia
 
         public void SetParent(IWindowImpl parent)
         {
-            throw new NotImplementedException();
+
         }
 
         public void SetSystemDecorations(SystemDecorations enabled)
@@ -235,7 +256,7 @@ namespace Stridelonia
 
         public void SetTitle(string title)
         {
-            Title = title;
+            RenderingElement.Name = title;
         }
 
         public void SetTopmost(bool value)
@@ -251,6 +272,9 @@ namespace Stridelonia
         public void Show()
         {
             IsVisible = true;
+            ulong timestamp = (ulong)(Environment.TickCount & int.MaxValue);
+            Input?.Invoke(new RawPointerEventArgs(MouseDevice, timestamp, InputRoot,
+                RawPointerEventType.LeaveWindow, new Point(-1, -1), RawInputModifiers.None));
         }
 
         public void ShowTaskbarIcon(bool value)
@@ -266,10 +290,7 @@ namespace Stridelonia
             {
                 case WindowState.FullScreen:
                 case WindowState.Maximized:
-                    ClientSize = Screen.AllScreens[0].Bounds.Size.ToSize(1);
-                    renderTarget.DestroyRenderTarget();
-                    renderTarget.ClientSize = ClientSize;
-                    Resized?.Invoke(ClientSize);
+                    Resize(Screen.AllScreens[0].Bounds.Size.ToSize(1));
                     Position = new PixelPoint(0, 0);
                     PositionChanged?.Invoke(Position);
                     break;
@@ -279,6 +300,9 @@ namespace Stridelonia
         public void Show(bool activate)
         {
             IsVisible = true;
+            ulong timestamp = (ulong)(Environment.TickCount & int.MaxValue);
+            Input?.Invoke(new RawPointerEventArgs(MouseDevice, timestamp, InputRoot,
+                RawPointerEventType.LeaveWindow, new Point(-1, -1), RawInputModifiers.None));
         }
     }
 }

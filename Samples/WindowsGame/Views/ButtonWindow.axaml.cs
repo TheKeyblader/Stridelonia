@@ -25,7 +25,7 @@ namespace WindowsGame.Views
         public ButtonWindow(Random random)
         {
             Random = random;
-            WindowExtensions.SetRenderGroup(this, Stride.Rendering.RenderGroup.Group31);
+            WindowExtensions.SetRenderGroup(this, 31);
             this.InitializeComponent();
 #if DEBUG
             this.AttachDevTools();
@@ -42,6 +42,7 @@ namespace WindowsGame.Views
         protected override void OnOpened(EventArgs e)
         {
             base.OnOpened(e);
+            WindowExtensions.SetZIndex(this, short.Parse(Title));
             var btn = this.FindControl<Button>("CloseBtn");
             btn.Content = "Click Me " + Title + " !";
         }

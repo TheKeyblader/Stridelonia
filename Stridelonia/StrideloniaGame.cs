@@ -1,9 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Avalonia;
+using Avalonia.Skia;
 using Stride.Engine;
+using Stride.Graphics;
+using Stridelonia.Generic;
+using Stridelonia.Input;
 
 namespace Stridelonia
 {
@@ -18,9 +19,23 @@ namespace Stridelonia
         protected override void BeginRun()
         {
             base.BeginRun();
+
+            InitalizeRendering();
+
+            GameSystems.Add(new PickingSystem(Services));
+
             AvaloniaManager.Initialize(this);
-            SharpDX.Configuration.EnableReleaseOnFinalizer = false;
             AvaloniaManager.Run();
+        }
+
+        private void InitalizeRendering()
+        {
+            switch (GraphicsDevice.Platform)
+            {
+                default:
+                    AvaloniaLocator.CurrentMutable.BindToSelf(new SkiaOptions { CustomGpuFactory = () => new GenericSkiaGpu() });
+                    break;
+            }
         }
 
         protected override void EndRun()

@@ -2,7 +2,8 @@
 
   <PropertyGroup>
     <TargetFramework>net5.0-windows</TargetFramework>
-    <RuntimeIdentifier>win-x86</RuntimeIdentifier>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <StrideGraphicsApi>Vulkan</StrideGraphicsApi>
     <ApplicationIcon>Resources\Icon.ico</ApplicationIcon>
     <OutputType>WinExe</OutputType>
     <RootNamespace>Stridelonia.Samples</RootNamespace>
@@ -12,14 +13,8 @@
     <!-- Force msbuild to check to rebuild this assembly instead of letting VS IDE guess -->
     <DisableFastUpToDateCheck>true</DisableFastUpToDateCheck>
   </PropertyGroup>
-
+  
   <ItemGroup>
-    <PackageReference Include="HarfBuzzSharp" Version="2.6.1.7" />
-    <PackageReference Include="SharpDX.Direct2D1" Version="4.2.0" />
+    <ProjectReference Include="..\Stridelonia.Samples\Stridelonia.Samples.csproj"/>
   </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\Stridelonia.Samples\Stridelonia.Samples.csproj" />
-  </ItemGroup>
-
 </Project>

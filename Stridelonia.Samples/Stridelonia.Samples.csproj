@@ -5,10 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="HarfBuzzSharp" Version="2.6.1.7" />
-    <PackageReference Include="SharpDX.Direct2D1" Version="4.2.0" />
     <PackageReference Include="Stride.Engine" Version="4.0.0.1-beta04-1347" />
-
     <PackageReference Include="Stride.Video" Version="4.0.0.1-beta04-1347" />
     <PackageReference Include="Stride.Physics" Version="4.0.0.1-beta04-1347" />
     <PackageReference Include="Stride.Navigation" Version="4.0.0.1-beta04-1347" />
