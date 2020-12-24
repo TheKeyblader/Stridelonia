@@ -116,12 +116,6 @@ RenderFeatures:
                 TransparentRenderStage: ref!! b42c73eb-c31b-4634-80c2-4764892283b4
                 EffectName: null
         PipelineProcessors: {}
-    2c31889da3674dba73fdd7a0f1470502*: !Stridelonia.AvaloniaUIRenderFeature,Stridelonia
-        RenderStageSelectors:
-            0a73c2ff7cb545df6219e1bab895be4a: !Stride.Rendering.SimpleGroupToRenderStageSelector,Stride.Rendering
-                RenderGroup: Group31
-                RenderStage: ref!! b42c73eb-c31b-4634-80c2-4764892283b4
-                EffectName: Test
 SharedRenderers:
     60459475d3a3adaf2d1ba5d99913ca75: !Stride.Rendering.Compositing.ForwardRenderer,Stride.Engine
         Id: 07bde1d9-3256-4f41-a4d2-80799a14c207

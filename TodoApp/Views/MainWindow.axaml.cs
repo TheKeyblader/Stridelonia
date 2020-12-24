@@ -9,7 +9,7 @@ namespace TodoApp.Views
     {
         public MainWindow()
         {
-            WindowExtensions.SetRenderGroup(this, Stride.Rendering.RenderGroup.Group31);
+            WindowExtensions.SetRenderGroup(this, 31);
             this.InitializeComponent();
         }
 

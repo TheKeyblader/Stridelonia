@@ -1,5 +1,4 @@
 using System.Diagnostics;
-using SharpDX.Direct2D1;
 using Stride.Engine;
 
 namespace Stridelonia.Samples

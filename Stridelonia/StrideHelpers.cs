@@ -4,7 +4,7 @@ using AvaloniaPoint = Avalonia.Point;
 
 namespace Stridelonia
 {
-    public static class StrideHelpers
+    internal static class StrideHelpers
     {
         #region Vectors
         public static Vector2 ToStride(this AvaloniaPoint point)

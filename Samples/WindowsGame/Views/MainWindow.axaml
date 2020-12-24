@@ -3,17 +3,36 @@
         xmlns:vm="clr-namespace:WindowsGame.ViewModels;assembly=WindowsGame"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:s="clr-namespace:Stridelonia;assembly=Stridelonia.Avalonia"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="WindowsGame.Views.MainWindow"
         TransparencyLevelHint="Transparent"
         WindowState="Maximized"
         Background="Transparent"
+        s:WindowExtensions.RenderGroup="31"
+        s:WindowExtensions.Is2D="False"
         Icon="/Assets/avalonia-logo.ico"
         Title="WindowsGame">
   <Design.DataContext>
     <vm:MainWindowViewModel/>
   </Design.DataContext>
+  <Window.Styles>
+    <Style Selector="Window">
+      <Style.Animations>
+        <Animation Duration="0:0:2" IterationCount="INFINITE" PlaybackDirection="Alternate">
+          <KeyFrame Cue="0%">
+            <Setter Property="s:WindowExtensions.Position3D" Value="{Binding StartPosition}" />
+            <Setter Property="s:WindowExtensions.Rotation3D" Value="{Binding StartRotation}" />
+          </KeyFrame>
+          <KeyFrame Cue="100%">
+            <Setter Property="s:WindowExtensions.Position3D" Value="{Binding EndPosition}" />
+            <Setter Property="s:WindowExtensions.Rotation3D" Value="{Binding EndRotation}" />
+          </KeyFrame>
+        </Animation>
+      </Style.Animations>
+    </Style>
+  </Window.Styles>
   <Panel>
-    <TextBlock x:Name="Test" Background="Black" Text="{Binding ScoreText}" FontSize="40" Foreground="White" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+    <TextBlock x:Name="Test" Background="Black" Text="{Binding ScoreText^}" FontSize="40" Foreground="White" HorizontalAlignment="Left" VerticalAlignment="Top"/>
   </Panel>
 </Window>

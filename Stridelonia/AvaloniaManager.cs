@@ -11,6 +11,7 @@ using Stride.Games;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Controls;
 using Avalonia.Threading;
+using Stride.Graphics;
 
 namespace Stridelonia
 {
@@ -37,7 +38,7 @@ namespace Stridelonia
         {
             if (_isInitialize) return;
 
-            if (game.GetType().Name.Contains("Editor", StringComparison.OrdinalIgnoreCase))
+            if (game.GetType().Name.Contains("Editor"))
             {
                 var logger = GlobalLogger.GetLogger("Stridelonia");
                 logger.Info("Stridelonia is disabled in GameStudio");
@@ -101,21 +102,7 @@ namespace Stridelonia
             }
             else
             {
-                var builderType = typeof(AppBuilderBase<>).MakeGenericType(typeof(AppBuilder));
-                var configureMethod = builderType.GetMethod(nameof(AppBuilder.Configure), BindingFlags.Public | BindingFlags.Static, null, new Type[0], null);
-                var builder = (AppBuilder)configureMethod.MakeGenericMethod(Options.ApplicationType).Invoke(null, new object[0]);
-
-                builder
-                    .UseStride()
-                    .UseDirect2D1();
-                Options.ConfigureApp(builder);
-
-                var lifetime = new ClassicDesktopStyleApplicationLifetime
-                {
-                    Args = Environment.GetCommandLineArgs(),
-                    ShutdownMode = ShutdownMode.OnExplicitShutdown
-                };
-                builder.SetupWithLifetime(lifetime);
+                CreateApplication(Options);
             }
         }
 
@@ -123,13 +110,31 @@ namespace Stridelonia
         {
             var options = (StridePlatformOptions)parameter;
 
+            CreateApplication(options);
+
+            _initedEvent.Set();
+            _runEvent.WaitOne();
+
+            var lifetime = (ClassicDesktopStyleApplicationLifetime)Application.Current.ApplicationLifetime;
+            lifetime.Start(Environment.GetCommandLineArgs());
+        }
+
+        private static AppBuilder CreateApplication(StridePlatformOptions options)
+        {
             var builderType = typeof(AppBuilderBase<>).MakeGenericType(typeof(AppBuilder));
             var configureMethod = builderType.GetMethod(nameof(AppBuilder.Configure), BindingFlags.Public | BindingFlags.Static, null, new Type[0], null);
             var builder = (AppBuilder)configureMethod.MakeGenericMethod(options.ApplicationType).Invoke(null, new object[0]);
 
             builder
-                .UseStride()
-                .UseDirect2D1();
+                .UseStride();
+
+            switch (GraphicsDevice.Platform)
+            {
+                default:
+                    builder.UseSkia();
+                    break;
+            }
+
             options.ConfigureApp(builder);
 
             var lifetime = new ClassicDesktopStyleApplicationLifetime
@@ -139,10 +144,7 @@ namespace Stridelonia
             };
             builder.SetupWithLifetime(lifetime);
 
-            _initedEvent.Set();
-            _runEvent.WaitOne();
-
-            lifetime.Start(Environment.GetCommandLineArgs());
+            return builder;
         }
 
         private static StridePlatformOptions GetOptions()
