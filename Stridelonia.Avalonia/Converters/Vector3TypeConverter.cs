@@ -23,7 +23,6 @@ namespace Stridelonia.Converters
             s = s.Trim('[', ']', '(', ')');
             var components = s.Split(',').Select(s => float.Parse(s)).ToArray();
             return new Vector3(components);
-            return new Vector3();
         }
     }
 

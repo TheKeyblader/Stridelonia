@@ -5,24 +5,31 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <Version>0.2.5-alpha</Version>
+    <Version>0.2.6-alpha</Version>
     <Authors>Jean-François Pustay</Authors>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <Description>Stride plugin which allows running Avalonia on Stride</Description>
     <RepositoryType>git</RepositoryType>
     <PackageTags>Stride;Avalonia;Stridelonia;UI</PackageTags>
-    
-    <DebugType>portable</DebugType>
-    <DebugSymbols>true</DebugSymbols>
+
+    <!-- Optional: Publish the repository URL in the built .nupkg (in the NuSpec <Repository> element) -->
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+
+    <!-- Optional: Embed source files that are not tracked by the source control manager in the PDB -->
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+
+    <!-- Optional: Build symbol package (.snupkg) to distribute the PDB containing Source Link -->
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Avalonia" Version="0.10.0-rc1" ExcludeAssets="build" />
     <PackageReference Include="Avalonia.Desktop" Version="0.10.0-rc1" />
 
-    <PackageReference Include="Stride.Engine" Version="4.0.0.1-beta04-1347" PrivateAssets="contentfiles;analyzers" />
-    <PackageReference Include="Stride.Core" Version="4.0.0.1-beta04-1347" PrivateAssets="contentfiles;analyzers" />
-    <PackageReference Include="Stride.UI" Version="4.0.0.1-beta04-1347" />
+    <PackageReference Include="Stride.Engine" Version="4.0.0.1-beta04-1364" PrivateAssets="contentfiles;analyzers" />
+    <PackageReference Include="Stride.Core" Version="4.0.0.1-beta04-1364" PrivateAssets="contentfiles;analyzers" />
+    <PackageReference Include="Stride.UI" Version="4.0.0.1-beta04-1364" />
 
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0">
       <PrivateAssets>all</PrivateAssets>

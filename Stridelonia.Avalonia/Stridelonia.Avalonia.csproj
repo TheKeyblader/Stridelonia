@@ -6,7 +6,7 @@
 
   <ItemGroup>
     <PackageReference Include="Avalonia" Version="0.10.0-rc1" />
-    <PackageReference Include="Stride.Core.Mathematics" Version="4.0.0.1-beta04-1347" />
+    <PackageReference Include="Stride.Core.Mathematics" Version="4.0.0.1-beta04-1364" />
   </ItemGroup>
 
 </Project>
