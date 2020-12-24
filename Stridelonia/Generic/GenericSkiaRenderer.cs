@@ -52,6 +52,7 @@ namespace Stridelonia.Generic
 
             private void SetTexture(IntPtr pixels, int size)
             {
+                if (_renderData.Texture == null) return;
                 StrideDispatcher.StrideThread.Post(() =>
                 {
                     var game = AvaloniaLocator.Current.GetService<IGame>();
@@ -76,7 +77,10 @@ namespace Stridelonia.Generic
                 var gameSettings = game.Services.GetService<IGameSettingsService>().Settings;
                 var device = game.GraphicsDevice;
 
-                _data.Texture = Texture.New2D(device, _data.Size.Width, _data.Size.Height, PixelFormat.B8G8R8A8_UNorm);
+                StrideDispatcher.StrideThread.InvokeAsync(() =>
+                {
+                    _data.Texture = Texture.New2D(device, _data.Size.Width, _data.Size.Height, PixelFormat.B8G8R8A8_UNorm);
+                }).Wait(1000);
                 if (gameSettings.Configurations.Get<RenderingSettings>().ColorSpace == ColorSpace.Linear)
                     _surface = SKSurface.Create(new SKImageInfo(_data.Size.Width, _data.Size.Height, SKColorType.Bgra8888, SKAlphaType.Premul, SKColorSpace.CreateSrgbLinear()));
                 else

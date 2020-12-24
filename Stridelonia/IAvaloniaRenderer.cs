@@ -19,7 +19,7 @@ namespace Stridelonia
         Size2 Size { get; set; }
     }
 
-    public class GenericAvaloniaRenderer : IAvaloniaRenderer
+    internal class GenericAvaloniaRenderer : IAvaloniaRenderer
     {
         public Texture Texture
         {

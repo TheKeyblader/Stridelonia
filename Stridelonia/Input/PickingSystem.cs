@@ -25,8 +25,8 @@ namespace Stridelonia.Input
     internal class PickingSystem : GameSystemBase
     {
         private IEnumerable<WindowImpl> all;
-        private readonly InputManager input;
-        private readonly IGraphicsDeviceService graphicsDeviceService;
+        private InputManager input;
+        private IGraphicsDeviceService graphicsDeviceService;
 
         private WindowImpl focusedWindow;
         private WindowImpl hoveredWindow;
@@ -38,13 +38,18 @@ namespace Stridelonia.Input
 
         public PickingSystem(IServiceRegistry registry) : base(registry)
         {
-            input = registry.GetService<InputManager>();
-            input.TextInput?.EnabledTextInput();
-
-            graphicsDeviceService = registry.GetService<IGraphicsDeviceService>();
-
             Enabled = true;
             Visible = false;
+        }
+
+        public override void Initialize()
+        {
+            base.Initialize();
+
+            input = Services.GetService<InputManager>();
+            input.TextInput?.EnabledTextInput();
+
+            graphicsDeviceService = Services.GetService<IGraphicsDeviceService>();
         }
 
         private ulong Timestamp => (ulong)(Environment.TickCount & int.MaxValue);
