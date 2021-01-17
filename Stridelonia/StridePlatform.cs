@@ -27,7 +27,7 @@ namespace Stridelonia
 {
     class StridePlatform : IPlatformSettings, IWindowingPlatform
     {
-        public Size DoubleClickSize => new Size(4, 4);
+        public Size DoubleClickSize => new(4, 4);
 
         public TimeSpan DoubleClickTime => TimeSpan.FromSeconds(0.2);
 

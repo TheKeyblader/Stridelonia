@@ -117,7 +117,7 @@ namespace Stridelonia
             ContainerManager.AddWindow(this);
         }
 
-        private IAvaloniaRenderer CreateRenderer()
+        private static IAvaloniaRenderer CreateRenderer()
         {
             return GraphicsDevice.Platform switch
             {
@@ -218,7 +218,7 @@ namespace Stridelonia
 
         public void SetExtendClientAreaChromeHints(ExtendClientAreaChromeHints hints)
         {
-            throw new NotImplementedException();
+            // NO OP
         }
 
         public void SetExtendClientAreaTitleBarHeightHint(double titleBarHeight)

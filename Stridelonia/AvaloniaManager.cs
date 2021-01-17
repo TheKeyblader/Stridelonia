@@ -122,8 +122,8 @@ namespace Stridelonia
         private static AppBuilder CreateApplication(StridePlatformOptions options)
         {
             var builderType = typeof(AppBuilderBase<>).MakeGenericType(typeof(AppBuilder));
-            var configureMethod = builderType.GetMethod(nameof(AppBuilder.Configure), BindingFlags.Public | BindingFlags.Static, null, new Type[0], null);
-            var builder = (AppBuilder)configureMethod.MakeGenericMethod(options.ApplicationType).Invoke(null, new object[0]);
+            var configureMethod = builderType.GetMethod(nameof(AppBuilder.Configure), BindingFlags.Public | BindingFlags.Static, null, Array.Empty<Type>(), null);
+            var builder = (AppBuilder)configureMethod.MakeGenericMethod(options.ApplicationType).Invoke(null, Array.Empty<object>());
 
             builder
                 .UseStride();
@@ -135,7 +135,7 @@ namespace Stridelonia
                     break;
             }
 
-            options.ConfigureApp(builder);
+            options.ConfigureApp?.Invoke(builder);
 
             var lifetime = new ClassicDesktopStyleApplicationLifetime
             {

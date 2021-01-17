@@ -15,7 +15,7 @@ namespace Stridelonia
         [ThreadStatic]
         private static bool isStrideThread;
 
-        private readonly ConcurrentQueue<Task> _taskqueue = new ConcurrentQueue<Task>();
+        private readonly ConcurrentQueue<Task> _taskqueue = new();
 
         public StrideDispatcher(IServiceRegistry registry) : base(registry)
         {

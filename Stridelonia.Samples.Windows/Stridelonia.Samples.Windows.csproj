@@ -2,8 +2,8 @@
 
   <PropertyGroup>
     <TargetFramework>net5.0-windows</TargetFramework>
-    <RuntimeIdentifier>win-x86</RuntimeIdentifier>
-    <StrideGraphicsApi>Vulkan</StrideGraphicsApi>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <StrideGraphicsApi>Direct3D11</StrideGraphicsApi>
     <ApplicationIcon>Resources\Icon.ico</ApplicationIcon>
     <OutputType>WinExe</OutputType>
     <RootNamespace>Stridelonia.Samples</RootNamespace>

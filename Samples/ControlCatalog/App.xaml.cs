@@ -109,6 +109,7 @@ namespace ControlCatalog
                 ApplicationType = typeof(App),
                 ConfigureApp = (builder) => builder.LogToTrace(),
                 UseMultiThreading = true,
+                WaitCopyTexture = true,
                 DrawFps = true
             };
         }

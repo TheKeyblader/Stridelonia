@@ -52,7 +52,7 @@ namespace Stridelonia.Input
             graphicsDeviceService = Services.GetService<IGraphicsDeviceService>();
         }
 
-        private ulong Timestamp => (ulong)(Environment.TickCount & int.MaxValue);
+        private static ulong Timestamp => (ulong)(Environment.TickCount & int.MaxValue);
 
         public override void Update(GameTime gameTime)
         {
@@ -66,7 +66,7 @@ namespace Stridelonia.Input
             all = ((IClassicDesktopStyleApplicationLifetime)Application.Current.ApplicationLifetime)
                 .Windows.Select(w => (WindowImpl)w.PlatformImpl);
 
-            if (all.Count(w => w.IsVisible) == 0) return;
+            if (!all.Any(w => w.IsVisible)) return;
 
             var modifiers = GetRawInputModifiers();
 
@@ -76,7 +76,7 @@ namespace Stridelonia.Input
                 {
                     if (pointerEvent.EventType == PointerEventType.Pressed)
                     {
-                        var newFocusedWindow = Get2DWindow(lastMousePosition) ?? Get3DWindow(lastMousePosition);
+                        var newFocusedWindow = Get2DWindow(lastMousePosition) ?? Get3DWindow();
 
                         if (focusedWindow != newFocusedWindow)
                         {
@@ -110,7 +110,7 @@ namespace Stridelonia.Input
                             lastMousePosition = pointerEvent.AbsolutePosition;
                             CalculateRay(lastMousePosition);
 
-                            var newHoveredWindow = Get2DWindow(lastMousePosition) ?? Get3DWindow(lastMousePosition);
+                            var newHoveredWindow = Get2DWindow(lastMousePosition) ?? Get3DWindow();
 
                             if (hoveredWindow != newHoveredWindow)
                             {
@@ -155,7 +155,7 @@ namespace Stridelonia.Input
 
             if (input.Events.Count == 0)
             {
-                var newHoveredWindow = Get2DWindow(lastMousePosition) ?? Get3DWindow(lastMousePosition);
+                var newHoveredWindow = Get2DWindow(lastMousePosition) ?? Get3DWindow();
 
                 if (hoveredWindow != newHoveredWindow)
                 {
@@ -233,7 +233,7 @@ namespace Stridelonia.Input
             return null;
         }
 
-        private WindowImpl Get3DWindow(Vector2 pos)
+        private WindowImpl Get3DWindow()
         {
             var windows = all.Where(w => w.IsVisible && !w.Is2D && w.HasInput);
 
@@ -292,7 +292,7 @@ namespace Stridelonia.Input
             }
         }
 
-        private void SendEvents(WindowImpl window, RawInputEventArgs args)
+        private static void SendEvents(WindowImpl window, RawInputEventArgs args)
         {
             Dispatcher.UIThread.Post(() =>
             {
@@ -300,7 +300,7 @@ namespace Stridelonia.Input
             }, DispatcherPriority.Input);
         }
 
-        private RawPointerEventType ToAvalonia(MouseButton type, bool isDown)
+        private static RawPointerEventType ToAvalonia(MouseButton type, bool isDown)
         {
             RawPointerEventType? rawType = null;
             switch (type)
@@ -324,7 +324,7 @@ namespace Stridelonia.Input
             return rawType.Value;
         }
 
-        private readonly Dictionary<Keys, Key> strideToAvalonia = new Dictionary<Keys, Key>
+        private readonly Dictionary<Keys, Key> strideToAvalonia = new()
         {
 
         };

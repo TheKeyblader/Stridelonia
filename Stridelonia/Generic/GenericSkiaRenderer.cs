@@ -16,12 +16,15 @@ namespace Stridelonia.Generic
     internal class GenericSkiaRenderer : ISkiaGpuRenderTarget
     {
         private readonly GenericAvaloniaRenderer _data;
+        private readonly StridePlatformOptions _options;
+
         private Size2 _currentSize;
         private SKSurface _surface;
 
         public GenericSkiaRenderer(GenericAvaloniaRenderer generic)
         {
             _data = generic;
+            _options = AvaloniaLocator.Current.GetService<StridePlatformOptions>();
         }
 
         public bool IsCorrupted => false;
@@ -37,10 +40,12 @@ namespace Stridelonia.Generic
             public GRSurfaceOrigin SurfaceOrigin => GRSurfaceOrigin.TopLeft;
 
             private readonly IAvaloniaRenderer _renderData;
+            private readonly bool _waitCopy;
 
-            public Session(IAvaloniaRenderer renderData, SKSurface skiaSurface)
+            public Session(IAvaloniaRenderer renderData, SKSurface skiaSurface, bool waitCopy)
             {
                 _renderData = renderData;
+                _waitCopy = waitCopy;
                 SkSurface = skiaSurface;
             }
 
@@ -53,7 +58,7 @@ namespace Stridelonia.Generic
             private void SetTexture(IntPtr pixels, int size)
             {
                 if (_renderData.Texture == null) return;
-                StrideDispatcher.StrideThread.Post(() =>
+                var copyTask = StrideDispatcher.StrideThread.InvokeAsync(() =>
                 {
                     var game = AvaloniaLocator.Current.GetService<IGame>();
                     var device = game.GraphicsDevice;
@@ -61,6 +66,7 @@ namespace Stridelonia.Generic
 
                     _renderData.Texture.SetData(context.CommandList, new DataPointer(pixels, size));
                 });
+                if (_waitCopy) copyTask.Wait();
             }
         }
 
@@ -87,7 +93,7 @@ namespace Stridelonia.Generic
                     _surface = SKSurface.Create(new SKImageInfo(_data.Size.Width, _data.Size.Height, SKColorType.Bgra8888, SKAlphaType.Premul));
                 _currentSize = _data.Size;
             }
-            return new Session(_data, _surface);
+            return new Session(_data, _surface, _options.WaitCopyTexture);
         }
 
         public void Dispose()
