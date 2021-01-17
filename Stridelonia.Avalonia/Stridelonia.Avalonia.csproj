@@ -4,9 +4,18 @@
     <TargetFramework>net5.0</TargetFramework>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <Version>0.2.6-alpha</Version>
+    <Authors>Jean-François Pustay</Authors>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <Description>Stride plugin which allows running Avalonia on Stride</Description>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>Stride;Avalonia;Stridelonia;UI</PackageTags>
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="Avalonia" Version="0.10.0-rc1" />
     <PackageReference Include="Stride.Core.Mathematics" Version="4.0.0.1-beta04-1364" />
   </ItemGroup>
-
+  
 </Project>

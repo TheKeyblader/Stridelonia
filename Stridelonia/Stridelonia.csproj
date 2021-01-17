@@ -11,16 +11,6 @@
     <Description>Stride plugin which allows running Avalonia on Stride</Description>
     <RepositoryType>git</RepositoryType>
     <PackageTags>Stride;Avalonia;Stridelonia;UI</PackageTags>
-
-    <!-- Optional: Publish the repository URL in the built .nupkg (in the NuSpec <Repository> element) -->
-    <PublishRepositoryUrl>true</PublishRepositoryUrl>
-
-    <!-- Optional: Embed source files that are not tracked by the source control manager in the PDB -->
-    <EmbedUntrackedSources>true</EmbedUntrackedSources>
-
-    <!-- Optional: Build symbol package (.snupkg) to distribute the PDB containing Source Link -->
-    <IncludeSymbols>true</IncludeSymbols>
-    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
 
   <ItemGroup>
@@ -40,8 +30,4 @@
   <ItemGroup>
     <ProjectReference Include="..\Stridelonia.Avalonia\Stridelonia.Avalonia.csproj" />
   </ItemGroup>
-  
-  <PropertyGroup Condition="'$(GITHUB_ACTIONS)' == 'true'">
-    <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
-  </PropertyGroup>
 </Project>
