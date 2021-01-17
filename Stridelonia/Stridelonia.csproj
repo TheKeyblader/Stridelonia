@@ -17,11 +17,11 @@
     <PackageReference Include="Avalonia" Version="0.10.0-rc1" ExcludeAssets="build" />
     <PackageReference Include="Avalonia.Desktop" Version="0.10.0-rc1" />
 
-    <PackageReference Include="Stride.Engine" Version="4.0.0.1-beta04-1364" PrivateAssets="contentfiles;analyzers" />
-    <PackageReference Include="Stride.Core" Version="4.0.0.1-beta04-1364" PrivateAssets="contentfiles;analyzers" />
-    <PackageReference Include="Stride.UI" Version="4.0.0.1-beta04-1364" />
+    <PackageReference Include="Stride.Engine" Version="4.0.1.1381-beta" PrivateAssets="contentfiles;analyzers" />
+    <PackageReference Include="Stride.Core" Version="4.0.1.1381-beta" PrivateAssets="contentfiles;analyzers" />
+    <PackageReference Include="Stride.UI" Version="4.0.1.1381-beta" />
 
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0">
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.0-beta-20204-02">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
