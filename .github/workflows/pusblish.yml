@@ -1,0 +1,43 @@
+name: publish to nuget
+on:
+  push:
+    branches:
+      - main # Default release branch
+jobs:
+  publish:
+    name: build, pack & publish
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup dotnet
+        uses: actions/setup-dotnet@v1
+        with:
+         dotnet-version: 5.0.101
+
+      # Publish
+      - name: Pusblish Stridelonia
+        id: publish_stridelonia
+        uses: rohith/publish-nuget@v2
+        with:
+          # Filepath of the project to be packaged, relative to root of repository
+          PROJECT_FILE_PATH: Stridelonia/Stridelonia.csproj
+          
+          # API key to authenticate with NuGet server
+          NUGET_KEY: ${{secrets.NUGET_API_KEY}}
+
+          # Flag to toggle pushing symbols along with nuget package to the server, disabled by default
+          INCLUDE_SYMBOLS: true
+           # Publish
+      - name: Pusblish stridelona.Avalonia
+        id: publish_stridelonia.avalonia
+        uses: rohith/publish-nuget@v2
+        with:
+          # Filepath of the project to be packaged, relative to root of repository
+          PROJECT_FILE_PATH: Stridelonia.Avalonia/Stridelonia.Avalonia.csproj
+          
+          # API key to authenticate with NuGet server
+          NUGET_KEY: ${{secrets.NUGET_API_KEY}}
+
+          # Flag to toggle pushing symbols along with nuget package to the server, disabled by default
+          INCLUDE_SYMBOLS: true
