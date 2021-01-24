@@ -3,9 +3,9 @@
     <TargetFramework>net5.0</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Avalonia" Version="0.10.0-rc1" />
-    <PackageReference Include="Avalonia.ReactiveUI" Version="0.10.0-rc1" />
-    <PackageReference Include="ReactiveUI.Fody" Version="13.0.38" />
+    <PackageReference Include="Avalonia" Version="0.10.0" />
+    <PackageReference Include="Avalonia.ReactiveUI" Version="0.10.0" />
+    <PackageReference Include="ReactiveUI.Fody" Version="13.1.1" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Stridelonia\Stridelonia.csproj" />

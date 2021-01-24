@@ -25,8 +25,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Avalonia" Version="0.10.0-rc1" ExcludeAssets="build" />
-    <PackageReference Include="Avalonia.Desktop" Version="0.10.0-rc1" />
+    <PackageReference Include="Avalonia" Version="0.10.0" ExcludeAssets="build" />
+    <PackageReference Include="Avalonia.Desktop" Version="0.10.0" />
 
     <PackageReference Include="Stride.Engine" Version="4.0.1.1381-beta" PrivateAssets="contentfiles;analyzers" />
     <PackageReference Include="Stride.Core" Version="4.0.1.1381-beta" PrivateAssets="contentfiles;analyzers" />
