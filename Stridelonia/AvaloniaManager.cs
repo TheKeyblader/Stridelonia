@@ -22,6 +22,7 @@ namespace Stridelonia
 
         private static Thread _avaloniaThread;
         private static bool _isInitialize;
+        private static bool _stop;
 
         public static StridePlatformOptions Options { get; }
 
@@ -68,8 +69,15 @@ namespace Stridelonia
             else
             {
                 var lifetime = (ClassicDesktopStyleApplicationLifetime)Application.Current.ApplicationLifetime;
+                lifetime.Exit += ExitEvent;
                 lifetime.Start(Environment.GetCommandLineArgs());
             }
+        }
+
+        private static void ExitEvent(object sender, ControlledApplicationLifetimeExitEventArgs args)
+        {
+            var game = AvaloniaLocator.Current.GetService<IGame>();
+            if (game is GameBase gameBase) gameBase.Exit();
         }
 
         public static void Stop()
@@ -116,6 +124,7 @@ namespace Stridelonia
             _runEvent.WaitOne();
 
             var lifetime = (ClassicDesktopStyleApplicationLifetime)Application.Current.ApplicationLifetime;
+            lifetime.Exit += ExitEvent;
             lifetime.Start(Environment.GetCommandLineArgs());
         }
 
