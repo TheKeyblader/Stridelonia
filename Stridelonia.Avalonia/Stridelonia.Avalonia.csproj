@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <Version>0.3.3-alpha</Version>
+    <Version>0.3.4-alpha</Version>
     <Authors>Jean-François Pustay</Authors>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <Description>Stride plugin which allows running Avalonia on Stride</Description>

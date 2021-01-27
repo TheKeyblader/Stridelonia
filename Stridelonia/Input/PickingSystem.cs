@@ -153,6 +153,16 @@ namespace Stridelonia.Input
                 }
             }
 
+            if (input.MouseWheelDelta != 0)
+            {
+                var window = hoveredWindow ?? focusedWindow;
+                if (window != null)
+                {
+                    SendEvents(window, new RawMouseWheelEventArgs(window.MouseDevice, Timestamp, window.InputRoot,
+                        lastMousePosition.ToAvalonia(), new Vector(0, input.MouseWheelDelta), modifiers));
+                }
+            }
+
             if (input.Events.Count == 0)
             {
                 var newHoveredWindow = Get2DWindow(lastMousePosition) ?? Get3DWindow();

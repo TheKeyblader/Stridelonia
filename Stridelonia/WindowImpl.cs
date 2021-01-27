@@ -114,6 +114,8 @@ namespace Stridelonia
                 Source = renderTarget.SpriteProvider
             };
 
+            Resize(Screen.AllScreens[0].Bounds.Size.ToSize(1));
+
             ContainerManager.AddWindow(this);
         }
 
@@ -201,9 +203,12 @@ namespace Stridelonia
 
         public void Resize(Size clientSize)
         {
-            ClientSize = clientSize;
-            renderTarget.Size = new Size2((int)clientSize.Width, (int)clientSize.Height);
-            Resized?.Invoke(clientSize);
+            if (clientSize != ClientSize)
+            {
+                ClientSize = clientSize;
+                renderTarget.Size = new Size2((int)clientSize.Width, (int)clientSize.Height);
+                Resized?.Invoke(clientSize);
+            }
         }
 
         public void SetCursor(IPlatformHandle cursor)

@@ -48,6 +48,13 @@ namespace Stridelonia
                     RootElement = new Canvas()
                 }
             };
+
+            var game = AvaloniaLocator.Current.GetService<IGame>();
+            var width = game.GraphicsDevice.Presenter.Description.BackBufferWidth;
+            var height = game.GraphicsDevice.Presenter.Description.BackBufferHeight;
+
+            uiPage.Resolution = new Vector3(width, height, 1000);
+
             ScreenPages.Add(renderGroup, uiPage);
             entity.Add(uiPage);
             Container2D.AddChild(entity);
