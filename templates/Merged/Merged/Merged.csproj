@@ -1,0 +1,28 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Stride.Engine" Version="4.0.1.1400" />
+
+    <PackageReference Include="Stride.Video" Version="4.0.1.1400" />
+    <PackageReference Include="Stride.Physics" Version="4.0.1.1400" />
+    <PackageReference Include="Stride.Navigation" Version="4.0.1.1400" />
+    <PackageReference Include="Stride.Particles" Version="4.0.1.1400" />
+    <PackageReference Include="Stride.UI" Version="4.0.1.1400" />
+
+    <PackageReference Include="Stride.Core.Assets.CompilerApp" Version="4.0.1.1400" IncludeAssets="build;buildTransitive" />
+
+    <PackageReference Include="Avalonia" Version="0.10.0" />
+    <PackageReference Include="Avalonia.Desktop" Version="0.10.0" />
+    <PackageReference Include="Avalonia.Diagnostics" Version="0.10.0" />
+    <PackageReference Include="Avalonia.ReactiveUI" Version="0.10.0" />
+    <PackageReference Include="Stridelonia" Version="0.3.4-alpha" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AvaloniaResource Include="AvaloniaAssets\**" />
+  </ItemGroup>
+</Project>
