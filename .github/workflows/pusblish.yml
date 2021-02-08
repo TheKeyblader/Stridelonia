@@ -21,7 +21,7 @@ jobs:
         uses: rohith/publish-nuget@v2
         with:
           # Filepath of the project to be packaged, relative to root of repository
-          PROJECT_FILE_PATH: Stridelonia/Stridelonia.csproj
+          PROJECT_FILE_PATH: src/Stridelonia/Stridelonia.csproj
           
           # API key to authenticate with NuGet server
           NUGET_KEY: ${{secrets.NUGET_API_KEY}}
@@ -34,7 +34,7 @@ jobs:
         uses: rohith/publish-nuget@v2
         with:
           # Filepath of the project to be packaged, relative to root of repository
-          PROJECT_FILE_PATH: Stridelonia.Avalonia/Stridelonia.Avalonia.csproj
+          PROJECT_FILE_PATH: src/Stridelonia.Avalonia/Stridelonia.Avalonia.csproj
           
           # API key to authenticate with NuGet server
           NUGET_KEY: ${{secrets.NUGET_API_KEY}}
