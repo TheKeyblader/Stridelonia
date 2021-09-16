@@ -3,7 +3,6 @@
   <PropertyGroup>
     <TargetFramework>net5.0-windows</TargetFramework>
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
-    <StrideGraphicsApi>Direct3D12</StrideGraphicsApi>
     <ApplicationIcon>Resources\Icon.ico</ApplicationIcon>
     <OutputType>WinExe</OutputType>
     <RootNamespace>Stridelonia.Samples</RootNamespace>

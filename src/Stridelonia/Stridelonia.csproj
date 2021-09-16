@@ -7,7 +7,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <Version>0.4-preview</Version>
+    <Version>0.5-preview</Version>
     <Authors>Jean-François Pustay</Authors>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <Description>Stride plugin which allows running Avalonia on Stride</Description>
@@ -26,12 +26,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Avalonia" Version="0.10.0" ExcludeAssets="build" />
-    <PackageReference Include="Avalonia.Desktop" Version="0.10.0" />
+    <PackageReference Include="Avalonia" Version="0.10.7" ExcludeAssets="build" />
+    <PackageReference Include="Avalonia.Desktop" Version="0.10.7" />
 
-    <PackageReference Include="Stride.Engine" Version="4.0.1.1381-beta" PrivateAssets="contentfiles;analyzers" />
-    <PackageReference Include="Stride.Core" Version="4.0.1.1381-beta" PrivateAssets="contentfiles;analyzers" />
-    <PackageReference Include="Stride.UI" Version="4.0.1.1381-beta" />
+    <PackageReference Include="Stride.Engine" Version="4.1.0.1459-beta" PrivateAssets="contentfiles;analyzers" />
+    <PackageReference Include="Stride.Core" Version="4.1.0.1459-beta" PrivateAssets="contentfiles;analyzers" />
+    <PackageReference Include="Stride.UI" Version="4.1.0.1459-beta" />
 
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.0-beta-20204-02">
       <PrivateAssets>all</PrivateAssets>

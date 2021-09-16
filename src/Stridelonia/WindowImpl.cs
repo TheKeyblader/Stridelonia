@@ -56,6 +56,7 @@ namespace Stridelonia
         public IScreenImpl Screen { get; }
 
         public Size ClientSize { get; private set; }
+        public Size? FrameSize => ClientSize;
 
         public double RenderScaling => 1;
 
@@ -63,7 +64,7 @@ namespace Stridelonia
 
         public Action<RawInputEventArgs> Input { get; set; }
         public Action<Rect> Paint { get; set; }
-        public Action<Size> Resized { get; set; }
+        public Action<Size, PlatformResizeReason> Resized { get; set; }
         public Action<double> ScalingChanged { get; set; }
         public Action<WindowTransparencyLevel> TransparencyLevelChanged { get; set; }
         public Action Closed { get; set; }
@@ -201,17 +202,17 @@ namespace Stridelonia
             return PixelPoint.FromPoint(point, 1);
         }
 
-        public void Resize(Size clientSize)
+        public void Resize(Size clientSize, PlatformResizeReason reason = PlatformResizeReason.Application)
         {
             if (clientSize != ClientSize)
             {
                 ClientSize = clientSize;
                 renderTarget.Size = new Size2((int)clientSize.Width, (int)clientSize.Height);
-                Resized?.Invoke(clientSize);
+                Resized?.Invoke(clientSize, reason);
             }
         }
 
-        public void SetCursor(IPlatformHandle cursor)
+        public void SetCursor(ICursorImpl cursor)
         {
 
         }
@@ -302,7 +303,7 @@ namespace Stridelonia
             }
         }
 
-        public void Show(bool activate)
+        public void Show(bool activate, bool isDialog)
         {
             IsVisible = true;
             ulong timestamp = (ulong)(Environment.TickCount & int.MaxValue);

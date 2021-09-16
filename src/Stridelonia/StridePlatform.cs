@@ -41,7 +41,7 @@ namespace Stridelonia
                 AvaloniaLocator.CurrentMutable.Bind<IPlatformThreadingInterface>().ToSingleton<SingleThreadStridePlatformThreadingInterface>();
 
             AvaloniaLocator.CurrentMutable
-                .Bind<IStandardCursorFactory>().ToSingleton<CursorFactory>()
+                .Bind<ICursorFactory>().ToSingleton<CursorFactory>()
                 .Bind<IKeyboardDevice>().ToSingleton<KeyboardDevice>()
                 .Bind<ISystemDialogImpl>().ToSingleton<SystemDialogImpl>()
                 .Bind<IPlatformSettings>().ToSingleton<StridePlatform>()
