@@ -16,7 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Samples\ControlCatalog\ControlCatalog.csproj" />
+    <ProjectReference Include="..\Samples\WindowsGame\WindowsGame.csproj" />
     <ProjectReference Include="..\Stridelonia\Stridelonia.csproj" />
   </ItemGroup>
 </Project>

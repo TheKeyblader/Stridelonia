@@ -69,6 +69,11 @@ namespace Stridelonia
             throw new NotSupportedException();
         }
 
+        public ITrayIconImpl CreateTrayIcon()
+        {
+            throw new NotImplementedException();
+        }
+
         public IWindowImpl CreateWindow() => new WindowImpl();
     }
 }
