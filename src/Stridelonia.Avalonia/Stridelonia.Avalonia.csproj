@@ -27,7 +27,7 @@
 
   <ItemGroup>
     <PackageReference Include="Avalonia" Version="0.10.13" />
-    <PackageReference Include="Stride.Core.Mathematics" Version="4.1.0.1459-beta" />
+    <PackageReference Include="Stride.Core.Mathematics" Version="4.1.0.1838" />
 
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1">
       <PrivateAssets>all</PrivateAssets>
